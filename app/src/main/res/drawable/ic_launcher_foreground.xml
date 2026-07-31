@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Crescent Moon -->
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M50,28 C37.3,28 27,38.3 27,51 C27,63.7 37.3,74 50,74 C58.2,74 65.3,69.7 69.4,63.1 C67,64.3 64.3,65 61.4,65 C50.4,65 41.5,56.1 41.5,45.1 C41.5,37.8 45.4,31.4 51.3,28.2 C50.9,28.1 50.4,28 50,28 Z" />
+    
+    <!-- Ambient Sound Waves -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M66,38 C72,43 75,50 75,58 C75,64 72,70 66,74" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#60A5FA"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M73,32 C81,39 84,49 84,58 C84,66 81,75 73,81" />
+
+    <!-- Soft Stars -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M38,32 L39,35 L42,36 L39,37 L38,40 L37,37 L34,36 L37,35 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M30,62 L30.7,64 L33,64.7 L30.7,65.4 L30,67.6 L29.3,65.4 L27,64.7 L29.3,64 Z" />
+</vector>

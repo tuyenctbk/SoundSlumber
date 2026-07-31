@@ -1,0 +1,6 @@
+{
+  "name": "SoundSlumber",
+  "description": "Minimalist sleep sound, white noise generator and multi-track audio mixer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
