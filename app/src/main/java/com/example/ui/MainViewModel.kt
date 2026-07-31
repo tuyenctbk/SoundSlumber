@@ -23,6 +23,10 @@ enum class ThemeStyle {
     DARK, LIGHT, AUTO
 }
 
+enum class SuggestionType {
+    SHARE, RATE, UPDATE
+}
+
 data class MainUiState(
     val tracks: List<SoundTrackState> = TrackType.entries.map { SoundTrackState(type = it) },
     val masterVolume: Float = 0.8f,
@@ -37,7 +41,8 @@ data class MainUiState(
     val currentTab: Int = 0, // 0: Mixer, 1: Presets, 2: OLED Clock, 3: Sleep Log & Stats, 4: Settings
     val activeSoundCount: Int = 4,
     val firebaseState: FirebaseState = FirebaseState(),
-    val themeStyle: ThemeStyle = ThemeStyle.DARK
+    val themeStyle: ThemeStyle = ThemeStyle.DARK,
+    val suggestionToShow: SuggestionType? = null
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -69,9 +74,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val database = SoundDatabase.getDatabase(application)
-        repository = SoundRepository(database.soundDao())
-
-        // Bind foreground service
+        repository = SoundRepository(database.soundDao(), database.appUsageDao())
+        
+        viewModelScope.launch {
+            repository.incrementUsage("launch_count")
+            checkSuggestions()
+        }
         val intent = Intent(application, SoundPlaybackService::class.java)
         application.startService(intent)
         application.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
@@ -110,6 +118,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         FirebaseManager.logScreenView(screenName)
     }
 
+    private suspend fun checkSuggestions() {
+        val launchCount = repository.getUsageValue("launch_count")
+        val soundsPlayed = repository.getUsageValue("sounds_played")
+        
+        val lastRateShownAt = repository.getUsageValue("last_rate_shown_at")
+        val lastShareShownAt = repository.getUsageValue("last_share_shown_at")
+
+        // Real version should be from BuildConfig, but if not available, this is safe.
+        // val currentVersion = BuildConfig.VERSION_CODE 
+        val currentVersion = 1 
+        val minVersion = 2
+
+        when {
+            currentVersion < minVersion -> _uiState.update { it.copy(suggestionToShow = SuggestionType.UPDATE) }
+            launchCount % 10 == 0L && launchCount != lastRateShownAt -> {
+                repository.setUsageValue("last_rate_shown_at", launchCount)
+                _uiState.update { it.copy(suggestionToShow = SuggestionType.RATE) }
+            }
+            soundsPlayed % 5 == 0L && soundsPlayed > 0 && soundsPlayed != lastShareShownAt -> {
+                repository.setUsageValue("last_share_shown_at", soundsPlayed)
+                _uiState.update { it.copy(suggestionToShow = SuggestionType.SHARE) }
+            }
+        }
+    }
+
+    fun dismissSuggestion() {
+        _uiState.update { it.copy(suggestionToShow = null) }
+    }
+
     fun setThemeStyle(style: ThemeStyle) {
         _uiState.update { it.copy(themeStyle = style) }
     }
@@ -138,6 +175,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 syncAudioEngineWithUi()
                 service.startPlayback()
                 FirebaseManager.logPlaySoundscape(_uiState.value.selectedPresetName)
+                viewModelScope.launch {
+                    repository.incrementUsage("sounds_played")
+                    checkSuggestions()
+                }
             } else {
                 service.stopPlayback()
             }

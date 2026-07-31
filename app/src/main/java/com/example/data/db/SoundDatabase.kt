@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [PresetEntity::class, SleepLogEntity::class], version = 1, exportSchema = false)
+@Database(entities = [PresetEntity::class, SleepLogEntity::class, AppUsageEntity::class], version = 2, exportSchema = false)
 abstract class SoundDatabase : RoomDatabase() {
     abstract fun soundDao(): SoundDao
+    abstract fun appUsageDao(): AppUsageDao
 
     companion object {
         @Volatile
@@ -19,7 +20,7 @@ abstract class SoundDatabase : RoomDatabase() {
                     context.applicationContext,
                     SoundDatabase::class.java,
                     "soundslumber_db"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

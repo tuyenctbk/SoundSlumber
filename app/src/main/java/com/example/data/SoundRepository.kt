@@ -1,12 +1,27 @@
 package com.example.data
 
+import com.example.data.db.AppUsageDao
+import com.example.data.db.AppUsageEntity
 import com.example.data.db.PresetEntity
 import com.example.data.db.SleepLogEntity
 import com.example.data.db.SoundDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class SoundRepository(private val dao: SoundDao) {
+class SoundRepository(private val soundDao: SoundDao, private val appUsageDao: AppUsageDao) {
+    // ...
+    suspend fun getUsageValue(key: String): Long = appUsageDao.getValue(key) ?: 0L
+    suspend fun incrementUsage(key: String) {
+        val currentValue = getUsageValue(key)
+        setUsageValue(key, currentValue + 1)
+    }
+
+    suspend fun setUsageValue(key: String, value: Long) {
+        val rowsUpdated = appUsageDao.updateValue(key, value)
+        if (rowsUpdated == 0) {
+            appUsageDao.insertValue(AppUsageEntity(key, value))
+        }
+    }
 
     companion object {
         val BUILT_IN_PRESETS = listOf(
@@ -70,7 +85,7 @@ class SoundRepository(private val dao: SoundDao) {
 
     val builtInPresets = BUILT_IN_PRESETS
 
-    val customPresetsFlow: Flow<List<Preset>> = dao.getAllPresets().map { entities ->
+    val customPresetsFlow: Flow<List<Preset>> = soundDao.getAllPresets().map { entities ->
         entities.map { entity ->
             Preset(
                 id = entity.id,
@@ -80,7 +95,7 @@ class SoundRepository(private val dao: SoundDao) {
         }
     }
 
-    val sleepLogsFlow: Flow<List<SleepLog>> = dao.getRecentSleepLogs().map { entities ->
+    val sleepLogsFlow: Flow<List<SleepLog>> = soundDao.getRecentSleepLogs().map { entities ->
         entities.map {
             SleepLog(
                 id = it.id,
@@ -93,16 +108,16 @@ class SoundRepository(private val dao: SoundDao) {
 
     suspend fun savePreset(preset: Preset) {
         val json = serializeVolumes(preset.volumes)
-        dao.insertPreset(PresetEntity(id = preset.id, name = preset.name, trackVolumesJson = json))
+        soundDao.insertPreset(PresetEntity(id = preset.id, name = preset.name, trackVolumesJson = json))
     }
 
     suspend fun deletePreset(preset: Preset) {
         val json = serializeVolumes(preset.volumes)
-        dao.deletePreset(PresetEntity(id = preset.id, name = preset.name, trackVolumesJson = json))
+        soundDao.deletePreset(PresetEntity(id = preset.id, name = preset.name, trackVolumesJson = json))
     }
 
     suspend fun logSleepSession(durationMinutes: Int, presetName: String) {
-        dao.insertSleepLog(
+        soundDao.insertSleepLog(
             SleepLogEntity(
                 timestamp = System.currentTimeMillis(),
                 durationMinutes = durationMinutes,
@@ -112,7 +127,7 @@ class SoundRepository(private val dao: SoundDao) {
     }
 
     suspend fun clearHistory() {
-        dao.clearSleepLogs()
+        soundDao.clearSleepLogs()
     }
 
     private fun serializeVolumes(map: Map<TrackType, Float>): String {

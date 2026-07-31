@@ -9,6 +9,11 @@ data class PresetEntity(
     val name: String,
     val trackVolumesJson: String // Serialized map of track ID to volume
 )
+@Entity(tableName = "app_usage")
+data class AppUsageEntity(
+    @PrimaryKey val key: String,
+    val value: Long = 0
+)
 
 @Entity(tableName = "sleep_logs")
 data class SleepLogEntity(

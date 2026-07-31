@@ -115,6 +115,14 @@ fun SoundSlumberApp(
                         onTogglePlayback = { viewModel.togglePlayback() }
                     )
                 }
+                val suggestionToShow = uiState.suggestionToShow
+                if (suggestionToShow != null) {
+                    SuggestionDialog(
+                        type = suggestionToShow,
+                        onDismiss = { viewModel.dismissSuggestion() },
+                        onConfirm = { viewModel.dismissSuggestion() }
+                    )
+                }
             }
         }
     }
