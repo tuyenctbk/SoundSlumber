@@ -43,6 +43,7 @@ fun SoundSlumberApp(
     val uiState by viewModel.uiState.collectAsState()
     var selectedCategory by remember { mutableStateOf("All") }
     var showSavePresetDialog by remember { mutableStateOf(false) }
+    var showTimerDialog by remember { mutableStateOf(false) }
 
     val categories = listOf("All", "Nature", "Noise", "Home", "Ambient")
 
@@ -54,7 +55,8 @@ fun SoundSlumberApp(
                     onTogglePlayback = { viewModel.togglePlayback() },
                     onMasterVolumeChange = { viewModel.setMasterVolume(it) },
                     onAddTimerMinutes = { viewModel.addTimerMinutes(it) },
-                    onResetTimer = { viewModel.resetTimer() }
+                    onResetTimer = { viewModel.resetTimer() },
+                    onOpenTimerDialog = { showTimerDialog = true }
                 )
             }
         },
@@ -134,6 +136,16 @@ fun SoundSlumberApp(
                 viewModel.saveCurrentMixAsPreset(name)
                 showSavePresetDialog = false
             }
+        )
+    }
+
+    if (showTimerDialog) {
+        SleepTimerDialog(
+            uiState = uiState,
+            onDismiss = { showTimerDialog = false },
+            onSetTimer = { mins -> viewModel.setTimerMinutes(mins) },
+            onAddTimerMinutes = { mins -> viewModel.addTimerMinutes(mins) },
+            onResetTimer = { viewModel.resetTimer() }
         )
     }
 }
@@ -1013,7 +1025,8 @@ fun BottomControlSheet(
     onTogglePlayback: () -> Unit,
     onMasterVolumeChange: (Float) -> Unit,
     onAddTimerMinutes: (Int) -> Unit,
-    onResetTimer: () -> Unit
+    onResetTimer: () -> Unit,
+    onOpenTimerDialog: () -> Unit
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -1036,15 +1049,32 @@ fun BottomControlSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = "SLEEP TIMER",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            letterSpacing = 2.sp,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.Bold
+                Column(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onOpenTimerDialog() }
+                        .padding(vertical = 4.dp, horizontal = 4.dp)
+                        .testTag("sleep_timer_display")
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "SLEEP TIMER",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                letterSpacing = 2.sp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
-                    )
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
 
                     val mins = uiState.timerRemainingSeconds / 60
@@ -1065,7 +1095,10 @@ fun BottomControlSheet(
                     )
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Button(
                         onClick = { onAddTimerMinutes(15) },
                         colors = ButtonDefaults.buttonColors(
@@ -1075,7 +1108,9 @@ fun BottomControlSheet(
                         shape = CircleShape,
                         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                        modifier = Modifier.height(36.dp)
+                        modifier = Modifier
+                            .height(36.dp)
+                            .testTag("add_15m_button")
                     ) {
                         Text("+15m", style = MaterialTheme.typography.labelSmall)
                     }
@@ -1089,9 +1124,27 @@ fun BottomControlSheet(
                         shape = CircleShape,
                         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                        modifier = Modifier.height(36.dp)
+                        modifier = Modifier
+                            .height(36.dp)
+                            .testTag("add_30m_button")
                     ) {
                         Text("+30m", style = MaterialTheme.typography.labelSmall)
+                    }
+
+                    IconButton(
+                        onClick = onOpenTimerDialog,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .testTag("open_sleep_timer_modal")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Timer,
+                            contentDescription = "Set Custom Sleep Timer",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
 
                     if (uiState.isTimerActive) {
@@ -1100,12 +1153,13 @@ fun BottomControlSheet(
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .testTag("reset_timer_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Reset Timer",
-                                tint = MaterialTheme.colorScheme.secondary,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.size(16.dp)
                             )
                         }

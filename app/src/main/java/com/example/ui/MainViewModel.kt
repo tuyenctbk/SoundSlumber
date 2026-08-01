@@ -259,6 +259,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setTimerMinutes(minutes: Int) {
+        val totalSeconds = minutes * 60
+        _uiState.update {
+            it.copy(
+                timerTotalSeconds = totalSeconds,
+                timerRemainingSeconds = totalSeconds,
+                isTimerActive = true
+            )
+        }
+        FirebaseManager.logTimerStart(minutes)
+        startTimerCountdown()
+    }
+
     fun addTimerMinutes(minutes: Int) {
         val currentRemaining = _uiState.value.timerRemainingSeconds
         val addedSeconds = minutes * 60
@@ -266,7 +279,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         _uiState.update {
             it.copy(
-                timerTotalSeconds = newTotal,
+                timerTotalSeconds = if (it.isTimerActive) it.timerTotalSeconds + addedSeconds else newTotal,
                 timerRemainingSeconds = newTotal,
                 isTimerActive = true
             )
@@ -301,10 +314,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
             while (_uiState.value.timerRemainingSeconds > 0 && _uiState.value.isTimerActive) {
                 delay(1000L)
+                if (!_uiState.value.isPlaying) {
+                    continue
+                }
+
                 val remaining = _uiState.value.timerRemainingSeconds - 1
 
-                val fadeOutMult = if (remaining in 1..300) {
-                    (remaining / 300.0f).coerceIn(0.05f, 1.0f)
+                val totalSecs = _uiState.value.timerTotalSeconds.coerceAtLeast(1)
+                val fadeWindow = 300.coerceAtMost(totalSecs)
+                val fadeOutMult = if (remaining in 1..fadeWindow) {
+                    (remaining / fadeWindow.toFloat()).coerceIn(0.05f, 1.0f)
                 } else {
                     1.0f
                 }
