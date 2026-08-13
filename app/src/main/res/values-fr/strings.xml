@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Mode Économie d\'Énergie</string>
+    <string name="power_save_desc">Réduit le taux d\'échantillonnage audio et désactive les animations superflues pendant la lecture pour économiser la batterie durant la nuit.</string>
+    <string name="loudness_normalization">Normalisierung du Volume</string>
+    <string name="loudness_normalization_desc">Équilibre le volume principal de toutes les pistes actives, garantissant un volume sonore constant sans saturation.</string>
+    <string name="gentle_wake_mode">Réveil en Douceur</string>
+    <string name="gentle_wake_desc">Augmente progressivement le volume sur 5 minutes après l\'expiration du minuteur de sommeil pour vous réveiller en douceur.</string>
+    <string name="rise_and_shine">Debout là-dedans !</string>
+    <string name="rise_and_shine_desc">Vous réveille en douceur avec de tendres sons d\'ambiance</string>
+    <string name="good_morning">Bon matin</string>
+    <string name="track_card_icon_desc">Appuyer pour couper, maintenir pour atténuer progressivement</string>
+    <string name="onboarding_title_1">Bienvenue sur SoundSlumber</string>
+    <string name="onboarding_desc_1">Composez votre propre paysage sonore nocturne pour vous endormir plus vite et profiter d\'un sommeil profond.</string>
+    <string name="onboarding_title_2">Protection acoustique</string>
+    <string name="onboarding_desc_2">Profitez du mode Économie d\'Énergie pour préserver votre batterie et de la normalisation du volume pour un son stable sans saturation.</string>
+    <string name="onboarding_title_3">Réveil Lumineux en Douceur</string>
+    <string name="onboarding_desc_3">Réveillez-vous naturellement grâce à une augmentation progressive du volume sonore et un écran simulant la lumière de l\'aube.</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_skip">Passer</string>
+    <string name="onboarding_start">Démarrer</string>
 </resources>

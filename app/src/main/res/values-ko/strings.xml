@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">절전 모드</string>
+    <string name="power_save_desc">배터리를 절약하기 위해 재생 중 오디오 샘플링 속도를 낮추고 불필요한 UI 애니메이션을 비활성화합니다.</string>
+    <string name="loudness_normalization">음량 평준화</string>
+    <string name="loudness_normalization_desc">동시에 재생되는 모든 트랙의 마스터 출력 볼륨을 균형 있게 조정하여 왜곡 없이 일정한 음량을 유지합니다.</string>
+    <string name="gentle_wake_mode">부드러운 기상 모드</string>
+    <string name="gentle_wake_desc">수면 타이머가 종료되면 5분에 걸쳐 볼륨을 서서히 높여 자연스럽고 편안하게 깨어날 수 있도록 돕습니다.</string>
+    <string name="rise_and_shine">좋은 아침입니다, 일어나세요</string>
+    <string name="rise_and_shine_desc">부드러운 자연의 소리로 당신을 아침에 편안히 깨워줍니다</string>
+    <string name="good_morning">좋은 아침</string>
+    <string name="track_card_icon_desc">탭하여 음소거, 길게 눌러 서서히 소리 줄이기</string>
+    <string name="onboarding_title_1">SoundSlumber에 오신 것을 환영합니다</string>
+    <string name="onboarding_desc_1">더 빨리 잠들고 밤새도록 더 깊은 잠을 잘 수 있도록 개인 맞춤형 수면 사운드를 만들어보세요.</string>
+    <string name="onboarding_title_2">음향 보호 기능</string>
+    <string name="onboarding_desc_2">배터리를 절약하는 절전 모드와 왜곡 없는 소리를 제공하는 음량 평준화 기능을 사용해보세요.</string>
+    <string name="onboarding_title_3">부드러운 일출 기상</string>
+    <string name="onboarding_desc_3">점진적으로 올라가는 음량과 부드러운 일출 시뮬레이션 화면으로 아침에 기분 좋게 깨어나세요.</string>
+    <string name="onboarding_next">다음</string>
+    <string name="onboarding_skip">건너뛰기</string>
+    <string name="onboarding_start">시작하기</string>
 </resources>

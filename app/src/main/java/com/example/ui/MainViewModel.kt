@@ -61,7 +61,8 @@ data class MainUiState(
     val isGentleWakeEnabled: Boolean = false,
     val isGentleWaking: Boolean = false,
     val gentleWakeProgress: Float = 0f,
-    val recommendedPresets: List<Preset> = emptyList()
+    val recommendedPresets: List<Preset> = emptyList(),
+    val showOnboarding: Boolean = false
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -102,6 +103,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.incrementUsage("launch_count")
             checkSuggestions()
+            val onboardingCompleted = repository.getUsageValue("onboarding_completed")
+            if (onboardingCompleted != 1L) {
+                _uiState.update { it.copy(showOnboarding = true) }
+            }
         }
         val intent = Intent(application, SoundPlaybackService::class.java)
         application.startService(intent)
@@ -738,6 +743,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ))
 
         _uiState.update { it.copy(recommendedPresets = recommendations) }
+    }
+
+    fun completeOnboarding() {
+        viewModelScope.launch {
+            repository.setUsageValue("onboarding_completed", 1L)
+            _uiState.update { it.copy(showOnboarding = false) }
+        }
     }
 
     override fun onCleared() {

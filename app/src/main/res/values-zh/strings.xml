@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">省电模式</string>
+    <string name="power_save_desc">降低音频采样率并禁用播放期间非必要的界面动画，以节省夜间电量。</string>
+    <string name="loudness_normalization">音量均衡</string>
+    <string name="loudness_normalization_desc">均衡所有同时播放音轨的主输出音量，确保音量一致且不失真。</string>
+    <string name="gentle_wake_mode">柔和唤醒模式</string>
+    <string name="gentle_wake_desc">在睡眠定时器结束时，在5分钟内逐渐调高音量，帮您温柔地苏醒。</string>
+    <string name="rise_and_shine">晨光初现，准备起床</string>
+    <string name="rise_and_shine_desc">用柔和的自然环境音温柔地唤醒您</string>
+    <string name="good_morning">早上好</string>
+    <string name="track_card_icon_desc">轻触静音，长按逐渐淡出</string>
+    <string name="onboarding_title_1">欢迎来到 SoundSlumber</string>
+    <string name="onboarding_desc_1">定制您的专属助眠环境音，帮助您更快入睡，整晚睡得更香甜深沉。</string>
+    <string name="onboarding_title_2">声学防护</string>
+    <string name="onboarding_desc_2">开启省电模式在夜间节省电量，启用音量均衡功能防止音频忽大忽小产生爆音。</string>
+    <string name="onboarding_title_3">温柔日出唤醒</string>
+    <string name="onboarding_desc_3">伴随着逐渐变大的自然音量和模拟日出的柔和光效，让您自然舒适地醒来。</string>
+    <string name="onboarding_next">下一页</string>
+    <string name="onboarding_skip">跳过</string>
+    <string name="onboarding_start">立即开始</string>
 </resources>

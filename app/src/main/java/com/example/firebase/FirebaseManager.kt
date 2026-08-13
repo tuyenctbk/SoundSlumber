@@ -39,13 +39,38 @@ object FirebaseManager {
         try {
             val app = FirebaseApp.initializeApp(context)
             if (app != null) {
-                firebaseAnalytics = FirebaseAnalytics.getInstance(context)
+                val options = app.options
+                val isDummy = options.applicationId.contains("dummy") || options.projectId?.contains("dummy") == true
+
+                if (isDummy) {
+                    Log.i(TAG, "Dummy Firebase configuration detected. Running in Local-Only Mode.")
+                    try {
+                        FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(false)
+                    } catch (e: Exception) {
+                        Log.d(TAG, "Failed to disable Analytics programmatically", e)
+                    }
+                    try {
+                        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false)
+                    } catch (e: Exception) {
+                        Log.d(TAG, "Failed to disable Crashlytics programmatically", e)
+                    }
+                    _state.value = _state.value.copy(
+                        isInitialized = false,
+                        cloudSyncStatus = "Local-Only Mode",
+                        sleepTipOfTheDay = "Using local storage. Connect to Google Cloud to synchronize settings."
+                    )
+                    return
+                }
+
+                firebaseAnalytics = FirebaseAnalytics.getInstance(context).apply {
+                    setAnalyticsCollectionEnabled(true)
+                }
                 firebaseAuth = FirebaseAuth.getInstance()
                 firestore = FirebaseFirestore.getInstance()
-                crashlytics = FirebaseCrashlytics.getInstance()
-
-                crashlytics?.setCrashlyticsCollectionEnabled(true)
-                crashlytics?.log("FirebaseManager initialized")
+                crashlytics = FirebaseCrashlytics.getInstance().apply {
+                    setCrashlyticsCollectionEnabled(true)
+                    log("FirebaseManager initialized")
+                }
 
                 _state.value = _state.value.copy(isInitialized = true)
 

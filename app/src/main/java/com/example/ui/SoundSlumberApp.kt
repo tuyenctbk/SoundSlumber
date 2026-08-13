@@ -38,11 +38,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.Preset
 import com.example.data.SleepLog
 import com.example.data.SoundRepository
@@ -162,6 +165,12 @@ fun SoundSlumberApp(
                     onDismiss = { viewModel.dismissGentleWake() }
                 )
             }
+
+            if (uiState.showOnboarding) {
+                OnboardingOverlay(
+                    onComplete = { viewModel.completeOnboarding() }
+                )
+            }
         }
     }
 }
@@ -184,6 +193,351 @@ fun SoundSlumberApp(
             onAddTimerMinutes = { mins -> viewModel.addTimerMinutes(mins) },
             onResetTimer = { viewModel.resetTimer() }
         )
+    }
+}
+
+@Composable
+fun OnboardingOverlay(
+    onComplete: () -> Unit
+) {
+    var currentPage by remember { mutableStateOf(0) }
+
+    val onboardingGradient = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF1B182B), // Very deep violet
+            Color(0xFF0A090F)  // Midnight space black
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(onboardingGradient)
+            .testTag("onboarding_screen")
+    ) {
+        // Decorative background stars/nebula
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val random = java.util.Random(42)
+            for (i in 0 until 40) {
+                val x = random.nextFloat() * size.width
+                val y = random.nextFloat() * size.height
+                val radius = random.nextFloat() * 2f + 1f
+                val alpha = random.nextFloat() * 0.5f + 0.3f
+                drawCircle(
+                    color = Color.White.copy(alpha = alpha),
+                    radius = radius,
+                    center = Offset(x, y)
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Header: Title / App Name
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "SoundSlumber",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.5.sp
+                    )
+                )
+                
+                if (currentPage < 2) {
+                    TextButton(
+                        onClick = onComplete,
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color.White.copy(alpha = 0.6f)),
+                        modifier = Modifier.testTag("onboarding_skip_button")
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.onboarding_skip),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(48.dp))
+                }
+            }
+
+            // Slide content with transition animation
+            Crossfade(
+                targetState = currentPage,
+                animationSpec = tween(durationMillis = 400),
+                label = "onboarding_fade",
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) { page ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    when (page) {
+                        0 -> {
+                            // Page 1: Welcome & Value Prop
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(160.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                                        shape = CircleShape
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                                        shape = CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Bedtime,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(72.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(40.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.onboarding_title_1),
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.onboarding_desc_1),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    lineHeight = 24.sp
+                                ),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                        }
+                        1 -> {
+                            // Page 2: Power Save & Normalization
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.padding(vertical = 16.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(24.dp)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
+                                            shape = RoundedCornerShape(24.dp)
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.BatteryChargingFull,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                        modifier = Modifier.size(44.dp)
+                                    )
+                                }
+
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(100.dp)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(24.dp)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
+                                            shape = RoundedCornerShape(24.dp)
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.GraphicEq,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.size(44.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(40.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.onboarding_title_2),
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.onboarding_desc_2),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    lineHeight = 24.sp
+                                ),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                        }
+                        2 -> {
+                            // Page 3: Gentle Wake Mode
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(160.dp)
+                                    .background(
+                                        brush = Brush.radialGradient(
+                                            colors = listOf(
+                                                Color(0xFFFFB74D).copy(alpha = 0.3f),
+                                                Color.Transparent
+                                            )
+                                        ),
+                                        shape = CircleShape
+                                    )
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .size(110.dp)
+                                        .background(
+                                            color = Color(0xFFFFB74D).copy(alpha = 0.2f),
+                                            shape = CircleShape
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = Color(0xFFFFB74D).copy(alpha = 0.5f),
+                                            shape = CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.WbSunny,
+                                        contentDescription = null,
+                                        tint = Color(0xFFFFB74D),
+                                        modifier = Modifier.size(54.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(40.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.onboarding_title_3),
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                ),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = stringResource(id = R.string.onboarding_desc_3),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    lineHeight = 24.sp
+                                ),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Footer: Pager Indicators & Actions
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Indicator dots
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(vertical = 24.dp)
+                ) {
+                    repeat(3) { index ->
+                        val isSelected = currentPage == index
+                        val width by animateDpAsState(
+                            targetValue = if (isSelected) 24.dp else 8.dp,
+                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                            label = "dot_width"
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(height = 8.dp, width = width)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary
+                                    else Color.White.copy(alpha = 0.3f)
+                                )
+                                .testTag("onboarding_indicator_${index}")
+                        )
+                    }
+                }
+
+                // CTA Button
+                Button(
+                    onClick = {
+                        if (currentPage < 2) {
+                            currentPage++
+                        } else {
+                            onComplete()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .testTag(if (currentPage < 2) "onboarding_next_button" else "onboarding_start_button"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentPage == 2) Color(0xFFFFB74D) else MaterialTheme.colorScheme.primary,
+                        contentColor = if (currentPage == 2) Color(0xFF1E1E2C) else MaterialTheme.colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                ) {
+                    Text(
+                        text = if (currentPage < 2) {
+                            stringResource(id = R.string.onboarding_next)
+                        } else {
+                            stringResource(id = R.string.onboarding_start)
+                        },
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -469,7 +823,7 @@ fun TrackVolumeCard(
                     ) {
                         Icon(
                             imageVector = trackState.type.icon,
-                            contentDescription = "Tap to mute, Hold to fade out",
+                            contentDescription = stringResource(id = R.string.track_card_icon_desc),
                             tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier.size(18.dp)
                         )
@@ -2191,7 +2545,7 @@ fun SettingsTabContent(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Power Save Mode",
+                                text = stringResource(id = R.string.power_save_mode),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -2199,7 +2553,7 @@ fun SettingsTabContent(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Reduces audio sampling rate and disables non-essential UI animations during playback to save battery overnight.",
+                                text = stringResource(id = R.string.power_save_desc),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                     fontSize = 11.sp
@@ -2257,7 +2611,7 @@ fun SettingsTabContent(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Loudness Normalization",
+                                text = stringResource(id = R.string.loudness_normalization),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -2265,7 +2619,7 @@ fun SettingsTabContent(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Balances the output master volume across all concurrently active tracks, ensuring consistent loudness without clipping.",
+                                text = stringResource(id = R.string.loudness_normalization_desc),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                     fontSize = 11.sp
@@ -2323,7 +2677,7 @@ fun SettingsTabContent(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                text = "Gentle Wake Mode",
+                                text = stringResource(id = R.string.gentle_wake_mode),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -2331,7 +2685,7 @@ fun SettingsTabContent(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Slowly ramps the volume back up over 5 minutes when the sleep timer expires, smoothly transitions you to wakefulness.",
+                                text = stringResource(id = R.string.gentle_wake_desc),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                     fontSize = 11.sp
@@ -2531,7 +2885,7 @@ fun GentleWakeOverlay(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Rise and Shine",
+                text = stringResource(id = R.string.rise_and_shine),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
@@ -2542,7 +2896,7 @@ fun GentleWakeOverlay(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Gently waking you up with soft ambient sounds",
+                text = stringResource(id = R.string.rise_and_shine_desc),
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White.copy(alpha = 0.85f),
                     fontWeight = FontWeight.Medium
@@ -2588,7 +2942,7 @@ fun GentleWakeOverlay(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Good Morning",
+                        text = stringResource(id = R.string.good_morning),
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Bold
                         )

@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Режим энергосбережения</string>
+    <string name="power_save_desc">Снижает частоту дискретизации аудио и отключает второстепенную анимацию интерфейса во время воспроизведения для экономии заряда батареи ночью.</string>
+    <string name="loudness_normalization">Нормализация громкости</string>
+    <string name="loudness_normalization_desc">Балансирует общий уровень громкости всех одновременно активных дорожек, обеспечивая стабильное звучание без перегрузок.</string>
+    <string name="gentle_wake_mode">Режим мягкого пробуждения</string>
+    <string name="gentle_wake_desc">Медленно восстанавливает громкость в течение 5 минут после истечения таймера сна, обеспечивая плавный переход к бодрствованию.</string>
+    <string name="rise_and_shine">Проснись и пой</string>
+    <string name="rise_and_shine_desc">Мягко пробуждает вас тихими звуками природы</string>
+    <string name="good_morning">Доброе утро</string>
+    <string name="track_card_icon_desc">Нажмите, чтобы отключить звук, удерживайте для плавного затухания</string>
+    <string name="onboarding_title_1">Добро пожаловать в SoundSlumber</string>
+    <string name="onboarding_desc_1">Создайте индивидуальную атмосферу для сна, чтобы засыпать быстрее и спать глубже на протяжении всей ночи.</string>
+    <string name="onboarding_title_2">Акустическая защита</string>
+    <string name="onboarding_desc_2">Используйте режим энергосбережения для экономии батареи ночью и нормализацию громкости для предотвращения искажений.</string>
+    <string name="onboarding_title_3">Мягкий рассвет</string>
+    <string name="onboarding_desc_3">Просыпайтесь естественно благодаря постепенному нарастанию громкости и симуляции восхода солнца на экране.</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_skip">Пропустить</string>
+    <string name="onboarding_start">Начать</string>
 </resources>

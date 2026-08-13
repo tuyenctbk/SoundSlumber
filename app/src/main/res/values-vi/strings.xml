@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Chế độ Tiết kiệm Pin</string>
+    <string name="power_save_desc">Giảm tần số lấy mẫu âm thanh và tắt các hoạt ảnh không thiết yếu trong khi phát nhạc nhằm tiết kiệm pin qua đêm.</string>
+    <string name="loudness_normalization">Chuẩn hóa Âm lượng</string>
+    <string name="loudness_normalization_desc">Cân bằng âm lượng chính của tất cả các âm thanh đang phát, đảm bảo mức âm nhất quán mà không bị rè hay vỡ tiếng.</string>
+    <string name="gentle_wake_mode">Chế độ Đánh thức Nhẹ nhàng</string>
+    <string name="gentle_wake_desc">Tăng âm lượng từ từ trong vòng 5 phút khi bộ hẹn giờ ngủ kết thức, giúp bạn thức dậy một cách êm ái.</string>
+    <string name="rise_and_shine">Chào ngày mới</string>
+    <string name="rise_and_shine_desc">Đánh thức bạn nhẹ nhàng bằng những âm thanh môi trường êm dịu</string>
+    <string name="good_morning">Chào buổi sáng</string>
+    <string name="track_card_icon_desc">Chạm để tắt tiếng, giữ để nhỏ dần rồi tắt hẳn</string>
+    <string name="onboarding_title_1">Chào mừng bạn đến với SoundSlumber</string>
+    <string name="onboarding_desc_1">Tự tay thiết kế không gian âm thanh giấc ngủ của riêng bạn để chìm vào giấc ngủ nhanh hơn và ngủ sâu hơn suốt đêm.</string>
+    <string name="onboarding_title_2">Bảo vệ Âm thanh</string>
+    <string name="onboarding_desc_2">Tận hưởng Chế độ Tiết kiệm Pin để bảo vệ thời lượng pin và Chuẩn hóa Âm lượng để loại bỏ hoàn toàn các lỗi vỡ tiếng.</string>
+    <string name="onboarding_title_3">Đón Bình minh Êm dịu</string>
+    <string name="onboarding_desc_3">Thức giấc tự nhiên với mức âm lượng tăng chậm dần kết hợp cùng màn hình mô phỏng ánh sáng bình minh ấm áp.</string>
+    <string name="onboarding_next">Tiếp tục</string>
+    <string name="onboarding_skip">Bỏ qua</string>
+    <string name="onboarding_start">Bắt đầu</string>
 </resources>

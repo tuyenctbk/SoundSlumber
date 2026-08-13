@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Modo de Economia de Energia</string>
+    <string name="power_save_desc">Reduz a taxa de amostragem de áudio e desativa as animações não essenciais da interface do usuário durante a reprodução para economizar bateria durante a noite.</string>
+    <string name="loudness_normalization">Normalização de Volume</string>
+    <string name="loudness_normalization_desc">Equilibra o volume de saída master de todas as faixas ativas simultaneamente, garantindo um nível sonoro consistente e sem distorções.</string>
+    <string name="gentle_wake_mode">Modo de Despertar Suave</string>
+    <string name="gentle_wake_desc">Aumenta gradualmente o volume de volta ao longo de 5 minutos quando o temporizador expirando, proporcionando uma transição suave para o estado desperto.</string>
+    <string name="rise_and_shine">Hora de Despertar</string>
+    <string name="rise_and_shine_desc">Despertando você suavemente com sons ambientes agradáveis</string>
+    <string name="good_morning">Bom dia</string>
+    <string name="track_card_icon_desc">Toque para silenciar, mantenha pressionado para diminuir gradualmente o som</string>
+    <string name="onboarding_title_1">Bem-vindo ao SoundSlumber</string>
+    <string name="onboarding_desc_1">Crie a sua atmosfera sonora personalizada para adormecer mais rápido e dormir mais profundamente toda a noite.</string>
+    <string name="onboarding_title_2">Proteção Acústica</string>
+    <string name="onboarding_desc_2">Aproveite o Modo de Economia de Energia para poupar bateria e a Normalização de Volume para evitar distorções de áudio.</string>
+    <string name="onboarding_title_3">Despertar Suave ao Amanhecer</string>
+    <string name="onboarding_desc_3">Acorde naturalmente com um volume que aumenta gradualmente e uma tela que simula a luz do amanhecer.</string>
+    <string name="onboarding_next">Avançar</string>
+    <string name="onboarding_skip">Pular</string>
+    <string name="onboarding_start">Começar</string>
 </resources>

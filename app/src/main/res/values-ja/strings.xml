@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">省電力モード</string>
+    <string name="power_save_desc">バッテリー消費を抑えるため、再生中のオーディオサンプリングレートを下げ、不要なUIアニメーションを無効化します。</string>
+    <string name="loudness_normalization">音量平準化</string>
+    <string name="loudness_normalization_desc">同時に再生中のすべてのトラックのマスター出力音量のバランスを自動で整え、音割れのない均一な音量を提供します。</string>
+    <string name="gentle_wake_mode">やさしい目覚ましモード</string>
+    <string name="gentle_wake_desc">スリープタイマー終了時、5分間かけて徐々に音量を大きくし、心地よい快適な目覚めへと誘導します。</string>
+    <string name="rise_and_shine">朝になりました、起きましょう</string>
+    <string name="rise_and_shine_desc">自然でやさしい環境音とともにあなたを快適に目覚めさせます</string>
+    <string name="good_morning">おはようございます</string>
+    <string name="track_card_icon_desc">タップでミュート、長押しでフェードアウト</string>
+    <string name="onboarding_title_1">SoundSlumberへようこそ</string>
+    <string name="onboarding_desc_1">心地よい環境音をブレンドして、素早く快適に入眠し、朝まで深く上質な睡眠を体験しましょう。</string>
+    <string name="onboarding_title_2">スマート音響保護</string>
+    <string name="onboarding_desc_2">夜間のバッテリー消費を抑える省電力モードと、音割れを防ぎ音量を均一に保つ音量平準化機能が備わっています。</string>
+    <string name="onboarding_title_3">やさしい日の出起床</string>
+    <string name="onboarding_desc_3">目覚めを促す日の出のグラデーション光と、ゆっくりと大きくなるやさしいアラーム音で快適に目覚めましょう。</string>
+    <string name="onboarding_next">次へ</string>
+    <string name="onboarding_skip">スキップ</string>
+    <string name="onboarding_start">始める</string>
 </resources>

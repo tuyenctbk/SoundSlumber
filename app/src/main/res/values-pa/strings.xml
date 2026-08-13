@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">ਪਾਵਰ ਸੇਵ ਮੋਡ</string>
+    <string name="power_save_desc">ਰਾਤ ਭਰ ਬੈਟਰੀ ਬਚਾਉਣ ਲਈ ਪਲੇਬੈਕ ਦੌਰਾਨ ਆਡੀਓ ਸੈਂਪਲਿੰਗ ਦਰ ਨੂੰ ਘਟਾਉਂਦਾ ਹੈ ਅਤੇ ਗੈਰ-ਜ਼ਰੂਰੀ ਐਨੀਮੇਸ਼ਨ ਬੰਦ ਕਰਦਾ ਹੈ।</string>
+    <string name="loudness_normalization">ਆਵਾਜ਼ ਦਾ ਸਮਾਨੀਕਰਨ</string>
+    <string name="loudness_normalization_desc">ਸਾਰੇ ਚੱล ਰਹੇ ਟਰੈਕਾਂ ਦੀ ਆਵਾਜ਼ ਨੂੰ ਸੰਤੁਲਿਤ ਕਰਦਾ ਹੈ ਤਾਂ objections ਰਹਿਤ ਇੱਕ ਸਮਾਨ ਆਵਾਜ਼ ਮਿਲੇ।</string>
+    <string name="gentle_wake_mode">ਹੌਲੀ-ਹੌਲੀ ਜਾਗਣ ਦਾ ਮੋਡ</string>
+    <string name="gentle_wake_desc">ਸਲੀਪ ਟਾਈਮਰ ਖਤਮ ਹੋਣ \'ਤੇ 5 ਮਿੰਟਾਂ ਵਿੱਚ ਆਵਾਜ਼ ਨੂੰ ਹੌਲੀ-ਹੌਲੀ ਵਧਾਉਂਦਾ ਹੈ, ਜਿਸ ਨਾਲ ਤੁਸੀਂ ਆਰਾਮ ਨਾਲ ਜਾਗ ਸਕੋ।</string>
+    <string name="rise_and_shine">ਸੁਭਾਅ ਦਾ ਸੁਆਗਤ, ਜਾਗੋ</string>
+    <string name="rise_and_shine_desc">ਹਲਕੀ ਕੁਦਰਤੀ ਆਵਾਜ਼ਾਂ ਨਾਲ ਤੁਹਾਨੂੰ ਹੌਲੀ-ਹੌਲੀ ਜਗਾ ਰਿਹਾ ਹੈ</string>
+    <string name="good_morning">ਸ਼ੁਭ ਸਵੇਰ</string>
+    <string name="track_card_icon_desc">ਬੰਦ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ, ਹੌਲੀ-ਹੌਲੀ ਆਵਾਜ਼ ਘਟਾਉਣ ਲਈ ਦਬਾ ਕੇ ਰੱਖੋ</string>
+    <string name="onboarding_title_1">SoundSlumber ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ</string>
+    <string name="onboarding_desc_1">ਤੇਜ਼ੀ ਨਾਲ ਸੌਣ ਅਤੇ ਰਾਤ ਭਰ ਗੂੜ੍ਹੀ ਨੀਂਦ ਲੈਣ ਲਈ ਆਪਣੀ ਖੁਦ ਦੀ ਬੈੱਡਟਾਈਮ ਆਵਾਜ਼ ਤਿਆਰ ਕਰੋ।</string>
+    <string name="onboarding_title_2">ਧੁनी ਸੁਰੱਖਿਆ</string>
+    <string name="onboarding_desc_2">ਬੈਟਰੀ ਬਚਾਉਣ ਲਈ ਪਾਵਰ ਸੇਵ ਮੋਡ ਅਤੇ ਆਵਾਜ਼ ਫਟਣ ਤੋਂ ਰੋਕਣ ਲਈ ਲਾਊਡਨੈੱਸ ਨੌਰਮਲਾਈਜ਼ੇਸ਼ਨ ਦਾ ਆਨੰਦ ਲਓ।</string>
+    <string name="onboarding_title_3">ਹੌਲੀ-ਹੌਲੀ ਜਾਗਣਾ</string>
+    <string name="onboarding_desc_3">ਹੌਲੀ-ਹੌਲੀ ਵਧਦੀ ਆਵਾਜ਼ ਅਤੇ ਸੂਰਜ ਚੜ੍ਹਨ ਦੀ ਨਕਲੀ ਰੌਸ਼नी ਨਾਲ ਕੁਦਰਤੀ ਤੌਰ \'ਤੇ ਜਾਗੋ।</string>
+    <string name="onboarding_next">ਅੱਗੇ</string>
+    <string name="onboarding_skip">ਛੱਡੋ</string>
+    <string name="onboarding_start">ਸ਼ੁਰੂ ਕਰੋ</string>
 </resources>

@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">وضع توفير الطاقة</string>
+    <string name="power_save_desc">يقلل من معدل أخذ عينات الصوت ويعطل رسوم واجهة المستخدم غير الضرورية أثناء التشغيل لتوفير طاقة البطارية طوال الليل.</string>
+    <string name="loudness_normalization">موازنة حدة الصوت</string>
+    <string name="loudness_normalization_desc">يوازن مستوى الصوت الرئيسي لجميع المسارات النشطة في وقت واحد لضمان صوت متسق دون تشويه.</string>
+    <string name="gentle_wake_mode">وضع الاستيقاظ اللطيف</string>
+    <string name="gentle_wake_desc">يزيد مستوى الصوت تدريجيًا على مدار 5 دقائق عند انتهاء مؤقت النوم لتهيئة استيقاظك بسلاسة.</string>
+    <string name="rise_and_shine">اشرق وانطلق</string>
+    <string name="rise_and_shine_desc">يوقظك بلطف بأصوات بيئية هادئة</string>
+    <string name="good_morning">صباح الخير</string>
+    <string name="track_card_icon_desc">اضغط لكتم الصوت، واضغط مطولاً للتلاشي التدريجي</string>
+    <string name="onboarding_title_1">مرحباً بك في SoundSlumber</string>
+    <string name="onboarding_desc_1">صمّم بيئة صوتية مخصصة لمساعدتك على النوم بشكل أسرع وأعمق طوال الليل.</string>
+    <string name="onboarding_title_2">حماية الصوت الذكية</string>
+    <string name="onboarding_desc_2">استمتع بوضع توفير الطاقة للحفاظ على البطارية وموازنة حدة الصوت لمنع تشتت أو تشويه الصوت.</string>
+    <string name="onboarding_title_3">شروق لطيف</string>
+    <string name="onboarding_desc_3">استيقظ بشكل طبيعي مع صوت يتصاعد تدريجياً وشاشة تحاكي إضاءة الشروق اللطيفة.</string>
+    <string name="onboarding_next">التالي</string>
+    <string name="onboarding_skip">تخطي</string>
+    <string name="onboarding_start">ابدأ الآن</string>
 </resources>

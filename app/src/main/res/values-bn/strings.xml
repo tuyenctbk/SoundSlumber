@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">पॉवर सेव्ह मोड</string>
+    <string name="power_save_desc">রাতে ব্যাটারি বাঁচাতে অডিও স্যাম্পলিং রেট কমিয়ে দেয় এবং প্লেব্যাকের সময় অপ্রয়োজনীয় অ্যানিমেশন বন্ধ রাখে।</string>
+    <string name="loudness_normalization">লাউডনেস নরমালাইজেশন</string>
+    <string name="loudness_normalization_desc">একসাথে চলমান সব ট্র্যাকের মাস্টার ভলিউম ভারসাম্যপূর্ণ করে, যাতে আওয়াজ না কেটে সমানভাবে শোনা যায়।</string>
+    <string name="gentle_wake_mode">জেন্টল ওয়েক মোড</string>
+    <string name="gentle_wake_desc">স্লিপ টাইমার শেষ হলে ৫ মিনিটে আওয়াজ আস্তে আস্তে বাড়ায়, যাতে আপনি শান্তভাবে জেগে উঠতে পারেন।</string>
+    <string name="rise_and_shine">শুভ সকাল, জেগে উঠুন</string>
+    <string name="rise_and_shine_desc">মৃদু প্রাকৃতিক শব্দ দিয়ে আপনাকে শান্তভাবে জাগিয়ে তুলছে</string>
+    <string name="good_morning">শুভ সকাল</string>
+    <string name="track_card_icon_desc">মিউট করতে ট্যাপ করুন, আস্তে আস্তে আওয়াজ কমাতে চেপে রাখুন</string>
+    <string name="onboarding_title_1">SoundSlumber-এ আপনাকে স্বাগতম</string>
+    <string name="onboarding_desc_1">তাড়াতাড়ি ঘুমাতে এবং সারারাত গভীর ঘুমে আচ্ছন্ন থাকতে আপনার নিজস্ব শয়নকালীন শব্দজগৎ তৈরি করুন।</string>
+    <string name="onboarding_title_2">শব্দ সুরক্ষা</string>
+    <string name="onboarding_desc_2">ব্যাটারি বাঁচাতে পাওয়ার সেভ মোড এবং অডিও বিকৃতি এড়াতে লাউডনেস নরমালাইজেশনের সুবিধা নিন।</string>
+    <string name="onboarding_title_3">ভোরের মৃদু জাগরণ</string>
+    <string name="onboarding_desc_3">আস্তে আস্তে বাড়তে থাকা ভলিউম এবং স্ক্রিনে কৃত্রিম ভোরের আলো দিয়ে প্রাকৃতিকভাবে জেগে উঠুন।</string>
+    <string name="onboarding_next">পরবর্তী</string>
+    <string name="onboarding_skip">এড়িয়ে যান</string>
+    <string name="onboarding_start">শুরু করুন</string>
 </resources>

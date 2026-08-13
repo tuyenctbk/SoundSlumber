@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Güç Tasarrufu Modu</string>
+    <string name="power_save_desc">Gece boyunca pilden tasarruf etmek için ses örnekleme hızını düşürür ve oynatma sırasında gerekli olmayan kullanıcı arayüzü animasyonlarını devre dışı bırakır.</string>
+    <string name="loudness_normalization">Ses Yüksekliği Normalizasyonu</string>
+    <string name="loudness_normalization_desc">Aynı anda etkin olan tüm ses parçalarında ana çıkış sesini dengeler ve kırpılma olmadan tutarlı bir ses yüksekliği sağlar.</string>
+    <string name="gentle_wake_mode">Nazik Uyanma Modu</string>
+    <string name="gentle_wake_desc">Uyku zamanlayıcısı dolduğunda ses seviyesini 5 dakika boyunca yavaşça artırır, sizi uyanıklığa sorunsuz bir şekilde geçirir.</string>
+    <string name="rise_and_shine">Günaydın, Uyanma Vakti</string>
+    <string name="rise_and_shine_desc">Yumuşak ortam sesleriyle sizi nazikçe uyandırıyor</string>
+    <string name="good_morning">Günaydın</string>
+    <string name="track_card_icon_desc">Sessize almak için dokunun, yavaşça kapatmak için basılı tutun</string>
+    <string name="onboarding_title_1">SoundSlumber\'a Hoş Geldiniz</string>
+    <string name="onboarding_desc_1">Daha hızlı uykuya dalmak ve gece boyunca daha derin uyumak için kişisel uyku ses ortamınızı oluşturun.</string>
+    <string name="onboarding_title_2">Akustik Koruma</string>
+    <string name="onboarding_desc_2">Gece pil tasarrufu için Güç Tasarrufu Modunun ve ses patlamalarını önlemek için Ses Normalleştirmenin keyfini çıkarın.</string>
+    <string name="onboarding_title_3">Nazik Gün Doğumu</string>
+    <string name="onboarding_desc_3">Artan ses seviyesi ve simüle edilmiş gün doğumu aydınlatma ekranı ile doğal bir şekilde uyanın.</string>
+    <string name="onboarding_next">İleri</string>
+    <string name="onboarding_skip">Geç</string>
+    <string name="onboarding_start">Başlayın</string>
 </resources>

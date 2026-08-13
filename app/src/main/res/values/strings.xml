@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Power Save Mode</string>
+    <string name="power_save_desc">Reduces audio sampling rate and disables non-essential UI animations during playback to save battery overnight.</string>
+    <string name="loudness_normalization">Loudness Normalization</string>
+    <string name="loudness_normalization_desc">Balances the output master volume across all concurrently active tracks, ensuring consistent loudness without clipping.</string>
+    <string name="gentle_wake_mode">Gentle Wake Mode</string>
+    <string name="gentle_wake_desc">Slowly ramps the volume back up over 5 minutes when the sleep timer expires, smoothly transitions you to wakefulness.</string>
+    <string name="rise_and_shine">Rise and Shine</string>
+    <string name="rise_and_shine_desc">Gently waking you up with soft ambient sounds</string>
+    <string name="good_morning">Good Morning</string>
+    <string name="track_card_icon_desc">Tap to mute, Hold to fade out</string>
+    <string name="onboarding_title_1">Welcome to SoundSlumber</string>
+    <string name="onboarding_desc_1">Craft your personal bedtime soundscape to fall asleep faster and sleep deeper throughout the night.</string>
+    <string name="onboarding_title_2">Acoustic Protection</string>
+    <string name="onboarding_desc_2">Enjoy Power Save Mode to save battery overnight, and Loudness Normalization to prevent audio clipping.</string>
+    <string name="onboarding_title_3">Gentle Wake Sunrise</string>
+    <string name="onboarding_desc_3">Wake up naturally to a climbing volume ramp and a simulated sunrise illumination screen.</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_start">Get Started</string>
 </resources>

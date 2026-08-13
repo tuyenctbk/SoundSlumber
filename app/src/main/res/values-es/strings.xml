@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Modo de ahorro de energía</string>
+    <string name="power_save_desc">Reduce la frecuencia de muestreo de audio y desactiva las animaciones no esenciales de la interfaz de usuario durante la reproducción para ahorrar batería durante la noche.</string>
+    <string name="loudness_normalization">Normalización de volumen</string>
+    <string name="loudness_normalization_desc">Equilibra el volumen de salida maestro de todas las pistas activas de manera simultánea, garantizando una sonoridad constante sin distorsión.</string>
+    <string name="gentle_wake_mode">Modo de despertar suave</string>
+    <string name="gentle_wake_desc">Aumenta gradualmente el volumen durante 5 minutos cuando expira el temporizador de apagado, ayudándole a despertar suavemente.</string>
+    <string name="rise_and_shine">¡A levantarse!</string>
+    <string name="rise_and_shine_desc">Despertándote suavemente con sonidos ambientales agradables</string>
+    <string name="good_morning">Buenos días</string>
+    <string name="track_card_icon_desc">Toca para silenciar, mantén presionado para atenuar gradualmente</string>
+    <string name="onboarding_title_1">Te damos la bienvenida a SoundSlumber</string>
+    <string name="onboarding_desc_1">Diseña tu entorno de sonido personalizado para dormirte más rápido y disfrutar de un descanso más profundo toda la noche.</string>
+    <string name="onboarding_title_2">Protección acústica</string>
+    <string name="onboarding_desc_2">Aprovecha el modo de ahorro de energía para cuidar la batería y la normalización de volumen para evitar sonidos estridentes.</string>
+    <string name="onboarding_title_3">Despertar de amanecer suave</string>
+    <string name="onboarding_desc_3">Despiértate con suavidad con un volumen que sube gradualmente y una pantalla que simula los colores del amanecer.</string>
+    <string name="onboarding_next">Siguiente</string>
+    <string name="onboarding_skip">Omitir</string>
+    <string name="onboarding_start">Comenzar</string>
 </resources>

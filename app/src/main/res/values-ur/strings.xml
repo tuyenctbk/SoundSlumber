@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">پاور سیو موڈ</string>
+    <string name="power_save_desc">رات بھر بیٹری بچانے کے لیے آڈیو سیمپلنگ ریٹ کم کرتا ہے اور پلے بیک کے دوران غیر ضروری متحرک تصاویر کو بند کرتا ہے۔</string>
+    <string name="loudness_normalization">آواز کی یکسانیت</string>
+    <string name="loudness_normalization_desc">تمام فعال ٹریکس کی آواز کو متوازن کرتا ہے تاکہ آواز کٹے بغیر مسلسل एक जैसी मिले।</string>
+    <string name="gentle_wake_mode">آہستہ بیدار ہونے کا موڈ</string>
+    <string name="gentle_wake_desc">سلیپ ٹائمر ختم ہونے پر 5 منٹ میں حجم آہستہ آہستہ بڑھاتا ہے، تاکہ آپ سکون سے جاگ سکیں۔</string>
+    <string name="rise_and_shine">صبح بخیر، جاگ جائیں</string>
+    <string name="rise_and_shine_desc">ہلکی قدرتی آوازوں کے ساتھ آپ کو آہستہ سے بیدار کر رہا ہے</string>
+    <string name="good_morning">صبح بخیر</string>
+    <string name="track_card_icon_desc">خاموش کرنے کے لیے دبائیں، آہستہ آواز کم کرنے کے لیے تھام کر رکھیں</string>
+    <string name="onboarding_title_1">SoundSlumber میں خوش آمدید</string>
+    <string name="onboarding_desc_1">تیزی سے سونے اور رات بھر گہری نیند لینے کے لیے اپنا ذاتی بیڈ ٹائم ساؤنڈ اسکیپ تیار کریں۔</string>
+    <string name="onboarding_title_2">آواز کی حفاظت</string>
+    <string name="onboarding_desc_2">بیٹری بچانے کے لیے پاور سیو موڈ اور آواز فٹنے سے بچانے کے لیے لاؤڈنیس نارملائزیشن کا تجربہ کریں۔</string>
+    <string name="onboarding_title_3">نرم طلوع صبح</string>
+    <string name="onboarding_desc_3">آہستہ آہستہ بڑھتے ہوئے حجم اور اسکرین پر طلوعِ آفتاب کی روشنی کے ساتھ قدرتی طور پر بیدار ہوں۔</string>
+    <string name="onboarding_next">اگلا</string>
+    <string name="onboarding_skip">چھوڑیں</string>
+    <string name="onboarding_start">شروع کریں</string>
 </resources>

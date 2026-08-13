@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">โหมดประหยัดพลังงาน</string>
+    <string name="power_save_desc">ลดอัตราการสุ่มตัวอย่างเสียงและปิดใช้งานแอนิเมชันที่ไม่จำเป็นของ UI ระหว่างการเล่นเสียงเพื่อประหยัดแบตเตอรี่ตลอดคืน</string>
+    <string name="loudness_normalization">การปรับระดับเสียงให้เท่ากัน</string>
+    <string name="loudness_normalization_desc">ปรับสมดุลระดับเสียงหลักของแทร็กทั้งหมดที่เปิดใช้งานพร้อมกัน เพื่อให้แน่ใจว่าได้ระดับเสียงที่สม่ำเสมอโดยไม่เกิดเสียงแตก</string>
+    <string name="gentle_wake_mode">โหมดตื่นนอนอย่างอ่อนโยน</string>
+    <string name="gentle_wake_desc">ค่อยๆ เพิ่มระดับเสียงขึ้นในเวลา 5 นาทีเมื่อหมดเวลาจำกัดของตัวตั้งเวลาปิดเครื่อง เพื่อช่วยให้คุณตื่นนอนอย่างนุ่มนวล</string>
+    <string name="rise_and_shine">ตื่นมารับเช้าวันใหม่</string>
+    <string name="rise_and_shine_desc">ปลุกคุณอย่างอ่อนโยนด้วยเสียงบรรยากาศที่แสนนุ่มนวล</string>
+    <string name="good_morning">อรุณสวัสดิ์</string>
+    <string name="track_card_icon_desc">แตะเพื่อปิดเสียง กดค้างไว้เพื่อค่อยๆ หรี่เสียงลง</string>
+    <string name="onboarding_title_1">ยินดีต้อนรับสู่ SoundSlumber</string>
+    <string name="onboarding_desc_1">สร้างบรรยากาศเสียงเพื่อการนอนหลับของคุณเอง เพื่อการนอนหลับที่เร็วและลึกขึ้นตลอดทั้งคืน</string>
+    <string name="onboarding_title_2">การปกป้องด้านเสียง</string>
+    <string name="onboarding_desc_2">เพลิดเพลินกับโหมดประหยัดพลังงานเพื่อประหยัดแบตเตอรี่ข้ามคืน และการปรับระดับเสียงปกติเพื่อป้องกันเสียงแตก</string>
+    <string name="onboarding_title_3">ปลุกด้วยแสงอรุณอย่างอ่อนโยน</string>
+    <string name="onboarding_desc_3">ตื่นขึ้นตามธรรมชาติด้วยระดับเสียงที่ค่อยๆ เพิ่มขึ้นและหน้าจอจำลองแสงอาทิตย์ยามเช้า</string>
+    <string name="onboarding_next">ถัดไป</string>
+    <string name="onboarding_skip">ข้าม</string>
+    <string name="onboarding_start">เริ่มต้นใช้งาน</string>
 </resources>

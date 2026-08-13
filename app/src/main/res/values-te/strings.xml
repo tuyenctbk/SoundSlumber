@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">పవర్ సేవ్ మోడ్</string>
+    <string name="power_save_desc">రాత్రి బ్యాటరీ ఆదా చేయడానికి ఆడియో సాంప్లింగ్ రేటును తగ్గించి, యానిమేషన్లను నిలిపివేస్తుంది.</string>
+    <string name="loudness_normalization">శబ్ద సాధారణీకరణ</string>
+    <string name="loudness_normalization_desc">అన్ని ట్రాక్‌ల శబ్ద తీవ్రతను సమతుల్యం చేసి, శబ్దం హెచ్చుతగ్గులు లేకుండా ఒకేలా ఉంచుతుంది.</string>
+    <string name="gentle_wake_mode">సున్నితమైన మేల్కొలుపు మోడ్</string>
+    <string name="gentle_wake_desc">స్లీప్ టైమర్ ముగిసిన తర్వాత 5 నిమిషాల పాటు శబ్దాన్ని నెమ్మదిగా పెంచి, మిమ్మల్ని సున్నితంగా మేల్కొల్పుతుంది.</string>
+    <string name="rise_and_shine">శుభోదయం, మేల్కొనండి</string>
+    <string name="rise_and_shine_desc">మెల్లని ప్రకృతి శబ్దాలతో మిమ్మల్ని నిదానంగా మేల్కొల్పుతోంది</string>
+    <string name="good_morning">శుభోదయం</string>
+    <string name="track_card_icon_desc">మ్యూట్ చేయడానికి నొక్కండి, శబ్దం క్రమంగా తగ్గించడానికి నొక్కి పట్టుకోండి</string>
+    <string name="onboarding_title_1">SoundSlumber కు స్వాగతం</string>
+    <string name="onboarding_desc_1">త్వరగా నిద్రపోవడానికి మరియు రాత్రంతా ప్రశాంతంగా నిద్రించడానికి మీ సొంత నిద్రవేళ శబ్దాలను సృష్టించుకోండి.</string>
+    <string name="onboarding_title_2">ధ్వని రక్షణ</string>
+    <string name="onboarding_desc_2">బ్యాటరీని ఆదా చేయడానికి పవర్ సేవింగ్ మరియు శబ్దం హెచ్చుతగ్గులు లేకుండా ఉండేలా శబ్ద సాధారణీకరణను ఉపయోగించండి.</string>
+    <string name="onboarding_title_3">సున్నితమైన సూర్యోదయం</string>
+    <string name="onboarding_desc_3">నెమ్మదిగా పెరిగే శబ్దంతో మరియు సూర్యోదయ వెలుగుతో సహజసిద్ధంగా నిద్ర లేవండి.</string>
+    <string name="onboarding_next">తదుపరి</string>
+    <string name="onboarding_skip">దాటవేయి</string>
+    <string name="onboarding_start">ప్రారంభించు</string>
 </resources>

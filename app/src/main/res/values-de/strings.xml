@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Energiesparmodus</string>
+    <string name="power_save_desc">Reduziert die Audio-Abtastrate und deaktiviert unwichtige UI-Animationen während der Wiedergabe, um über Nacht Akku zu sparen.</string>
+    <string name="loudness_normalization">Lautstärkenormalisierung</string>
+    <string name="loudness_normalization_desc">Gleicht die Ausgangslautstärke aller gleichzeitig aktiven Spuren aus und sorgt so für eine gleichmäßige Lautstärke ohne Clipping.</string>
+    <string name="gentle_wake_mode">Sanfter Weckmodus</string>
+    <string name="gentle_wake_desc">Erhöht die Lautstärke nach Ablauf des Sleep-Timers über 5 Minuten langsam wieder und führt Sie so sanft in den Wachzustand.</string>
+    <string name="rise_and_shine">Raus aus den Federn</string>
+    <string name="rise_and_shine_desc">Weckt Sie sanft mit leisen Umgebungsgeräuschen</string>
+    <string name="good_morning">Guten Morgen</string>
+    <string name="track_card_icon_desc">Zum Stummschalten tippen, zum Ausblenden gedrückt halten</string>
+    <string name="onboarding_title_1">Willkommen bei SoundSlumber</string>
+    <string name="onboarding_desc_1">Gestalten Sie Ihre persönliche Einschlaf-Geräuschkulisse, um schneller einzuschlafen und tiefer zu schlafen.</string>
+    <string name="onboarding_title_2">Akustischer Schutz</string>
+    <string name="onboarding_desc_2">Nutzen Sie den Energiesparmodus, um über Nacht Akku zu sparen, und die Lautstärkenormalisierung, um Verzerrungen zu vermeiden.</string>
+    <string name="onboarding_title_3">Sanfter Sonnenaufgang</string>
+    <string name="onboarding_desc_3">Wachen Sie ganz natürlich mit einer ansteigenden Lautstärke und einem simulierten Sonnenaufgang-Bildschirm auf.</string>
+    <string name="onboarding_next">Weiter</string>
+    <string name="onboarding_skip">Überspringen</string>
+    <string name="onboarding_start">Loslegen</string>
 </resources>

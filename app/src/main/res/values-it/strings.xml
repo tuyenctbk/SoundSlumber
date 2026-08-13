@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">Risparmio Energetico</string>
+    <string name="power_save_desc">Riduce la frequenza di campionamento audio e disattiva le animazioni non essenziali durante la riproduzione per risparmiare batteria di notte.</string>
+    <string name="loudness_normalization">Normalizzazione Volume</string>
+    <string name="loudness_normalization_desc">Bilancia il volume principale di tutte le tracce attive contemporaneamente, garantendo un livello di suono coerente e senza distorsioni.</string>
+    <string name="gentle_wake_mode">Sveglia Dolce</string>
+    <string name="gentle_wake_desc">Aumenta gradualmente il volume nell\'arco de 5 minuti alla scadenza del timer di spegnimento, accompagnandoti dolcemente al risveglio.</string>
+    <string name="rise_and_shine">Sveglia e Splendi</string>
+    <string name="rise_and_shine_desc">Ti sveglia dolcemente con suoni della natura rilassanti</string>
+    <string name="good_morning">Buongiorno</string>
+    <string name="track_card_icon_desc">Tocca per silenziare, tieni premuto per sfumare gradualmente</string>
+    <string name="onboarding_title_1">Benvenuto in SoundSlumber</string>
+    <string name="onboarding_desc_1">Crea la tua atmosfera sonora personalizzata per addormentarti più velocemente e dormire più profondamente tutta la notte.</string>
+    <string name="onboarding_title_2">Protezione Acustica</string>
+    <string name="onboarding_desc_2">Usa la modalità Risparmio Energetico per salvaguardare la batteria e la Normalizzazione del Volume per evitare picchi sonori.</string>
+    <string name="onboarding_title_3">Alba e Risveglio Dolce</string>
+    <string name="onboarding_desc_3">Svegliati in modo naturale con un volume che sale gradualmente e uno schermo che simula i colori dell\'alba.</string>
+    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_skip">Salta</string>
+    <string name="onboarding_start">Inizia</string>
 </resources>

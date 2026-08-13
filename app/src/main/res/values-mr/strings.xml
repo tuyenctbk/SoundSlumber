@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">पॉवर सेव्ह मोड</string>
+    <string name="power_save_desc">रात्रभर बॅटरी वाचवण्यासाठी प्लेबॅक दरम्यान ऑडिओ सॅम्पलिंग दर कमी करतो आणि अनावश्यक UI अ‍ॅनिमेशन निष्क्रिय करतो.</string>
+    <string name="loudness_normalization">लाउडनेस नॉर्मलायझेशन</string>
+    <string name="loudness_normalization_desc">सर्व सक्रिय ट्रॅकचा आवाज एकाच वेळी संतुलित करतो, ज्यामुळे कोणताही अडथळा न येता सतत एकसमान आवाज मिळतो.</string>
+    <string name="gentle_wake_mode">जेंटल वेक मोड</string>
+    <string name="gentle_wake_desc">स्लीप टाइमर संपल्यावर ५ मिनिटांत हळूहळू आवाज वाढवतो, जेणेकरून तुम्ही सहज जागे होऊ शकता.</string>
+    <string name="rise_and_shine">सकाळ झाली, जागे व्हा</string>
+    <string name="rise_and_shine_desc">सौम्य नैसर्गिक आवाजांसह तुम्हाला हळूवारपणे जागे करत आहे</string>
+    <string name="good_morning">शुभ सकाळ</string>
+    <string name="track_card_icon_desc">म्युट करण्यासाठी टॅप करा, आवाज हळूहळू कमी करण्यासाठी दाबून ठेवा</string>
+    <string name="onboarding_title_1">SoundSlumber मध्ये आपले स्वागत आहे</string>
+    <string name="onboarding_desc_1">जलद झोपण्यासाठी आणि रात्रभर गाढ झोप घेण्यासाठी तुमची वैयक्तिक बेडटाईम ध्वनी तयार करा.</string>
+    <string name="onboarding_title_2">ध्वनी संरक्षण</string>
+    <string name="onboarding_desc_2">बॅटरी वाचवण्यासाठी पॉवर सेव्ह मोड आणि आवाज कट होणे टाळण्यासाठी लाउडनेस नॉर्मलायझेशनचा आनंद घ्या.</string>
+    <string name="onboarding_title_3">हळूवार सुर्योदय</string>
+    <string name="onboarding_desc_3">हळूहळू वाढणाऱ्या आवाजासह आणि सुर्योदयाच्या सिम्युलेटेड प्रकाशासह नैसर्गिकरित्या जागे व्हा.</string>
+    <string name="onboarding_next">पुढील</string>
+    <string name="onboarding_skip">वगळा</string>
+    <string name="onboarding_start">सुरू करा</string>
 </resources>

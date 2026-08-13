@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SoundSlumber</string>
+    <string name="power_save_mode">பேட்டரி சேமிப்பு முறை</string>
+    <string name="power_save_desc">இரவில் பேட்டரியைச் சேமிக்க ஆடியோ மாதிரி விகிதத்தைக் குறைத்து, அனிமேஷன்களை முடக்குகிறது.</string>
+    <string name="loudness_normalization">ஒலி சமநிலைப்படுத்துதல்</string>
+    <string name="loudness_normalization_desc">அனைத்து ஒலிகளின் அளவையும் சீராக வைத்து, ஒலி சிதைவடைவதை தடுக்கிறது.</string>
+    <string name="gentle_wake_mode">மென்மையான விழிப்பு முறை</string>
+    <string name="gentle_wake_desc">ஸ்லீப் டைமர் முடிந்ததும் 5 நிமிடங்களில் ஒலியை மெதுவாக அதிகரித்து, உங்களை நிம்மதியாக எழுப்புகிறது.</string>
+    <string name="rise_and_shine">அதிகாலை வணக்கம், எழுந்திடுங்கள்</string>
+    <string name="rise_and_shine_desc">மென்மையான இயற்கையான ஒலிகளுடன் உங்களை எழுப்புகிறது</string>
+    <string name="good_morning">காலை வணக்கம்</string>
+    <string name="track_card_icon_desc">மியூட் செய்ய தட்டவும், ஒலியை மெதுவாக குறைக்க அழுத்திப் பிடிக்கவும்</string>
+    <string name="onboarding_title_1">SoundSlumber-க்கு உங்களை வரவேற்கிறோம்</string>
+    <string name="onboarding_desc_1">விரைவாக உறங்கவும் இரவு முழுவதும் நிம்மதியாக தூங்கவும் உங்களுக்கென தனித்துவமான ஒலிக்கலவையை உருவாக்குங்கள்.</string>
+    <string name="onboarding_title_2">ஒலி பாதுகாப்பு</string>
+    <string name="onboarding_desc_2">பேட்டரியைச் சேமிக்க பவர் சேவிங் முறையையும், சீரான ஒலிக்காக ஒலி சமநிலைப்படுத்துதலையும் அனுபவிக்கவும்.</string>
+    <string name="onboarding_title_3">மென்மையான அதிகாலை விழிப்பு</string>
+    <string name="onboarding_desc_3">மெதுவாக அதிகரிக்கும் ஒலியமைப்பு மற்றும் அதிகாலைச் சூரியனின் ஒளியைப் போன்ற திரைவெளிச்சத்துடன் இயற்கையாக விழித்திடுங்கள்.</string>
+    <string name="onboarding_next">அடுத்து</string>
+    <string name="onboarding_skip">தவிர்</string>
+    <string name="onboarding_start">தொடங்குங்கள்</string>
 </resources>
