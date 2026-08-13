@@ -10,10 +10,15 @@ import kotlin.math.*
 
 class SoundEngine {
 
-    private val sampleRate = 44100
     private var audioTrack: AudioTrack? = null
     private var synthJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+    @Volatile
+    var isPowerSaveEnabled: Boolean = false
+
+    @Volatile
+    var isNormalizationEnabled: Boolean = true
 
     @Volatile
     var isPlaying: Boolean = false
@@ -26,7 +31,7 @@ class SoundEngine {
     var fadeOutMultiplier: Float = 1.0f
 
     // Track volume map
-    private val trackVolumes = ConcurrentHashMap<TrackType, Float>()
+    private val trackVolumes = java.util.concurrent.ConcurrentHashMap<TrackType, Float>()
 
     init {
         TrackType.entries.forEach { track ->
@@ -46,8 +51,9 @@ class SoundEngine {
         if (isPlaying) return
         isPlaying = true
 
+        val sRate = if (isPowerSaveEnabled) 22050 else 44100
         val minBuffer = AudioTrack.getMinBufferSize(
-            sampleRate,
+            sRate,
             AudioFormat.CHANNEL_OUT_MONO,
             AudioFormat.ENCODING_PCM_16BIT
         )
@@ -63,7 +69,7 @@ class SoundEngine {
             .setAudioFormat(
                 AudioFormat.Builder()
                     .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setSampleRate(sampleRate)
+                    .setSampleRate(sRate)
                     .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
                     .build()
             )
@@ -94,6 +100,7 @@ class SoundEngine {
         val frameSize = 1024
         val buffer = ShortArray(frameSize)
         val floatBuffer = FloatArray(frameSize)
+        val sRate = if (isPowerSaveEnabled) 22050f else 44100f
 
         // DSP filter states for each generator
         val random = Random()
@@ -191,7 +198,7 @@ class SoundEngine {
 
                 // 5. Soft Thunder
                 if (vThunder > 0.001f) {
-                    thunderPhase += 1f / sampleRate
+                    thunderPhase += 1f / sRate
                     // Periodic burst (~every 12 seconds)
                     if (thunderPhase > 12f) {
                         thunderPhase = 0f
@@ -201,13 +208,13 @@ class SoundEngine {
                     }
                     thunderBursts *= 0.99992f
                     thunderLp += 0.015f * (white * thunderBursts - thunderLp)
-                    val rumble = sin(2.0 * Math.PI * 45.0 * sampleIndex / sampleRate).toFloat() * 0.2f
+                    val rumble = sin(2.0 * Math.PI * 45.0 * sampleIndex / sRate).toFloat() * 0.2f
                     mixSample += (thunderLp * 3.0f + rumble * thunderBursts) * vThunder
                 }
 
                 // 6. Ceiling Fan
                 if (vFan > 0.001f) {
-                    fanPhase += 12.0f / sampleRate // 12Hz blade rotation
+                    fanPhase += 12.0f / sRate // 12Hz blade rotation
                     val fanMod = 0.75f + 0.25f * sin(2.0 * Math.PI * fanPhase).toFloat()
                     fanLp += 0.05f * (white * fanMod - fanLp)
                     mixSample += fanLp * 1.8f * vFan
@@ -215,7 +222,7 @@ class SoundEngine {
 
                 // 7. Ocean Waves
                 if (vOcean > 0.001f) {
-                    oceanPhase += 0.1f / sampleRate // 0.1 Hz surge
+                    oceanPhase += 0.1f / sRate // 0.1 Hz surge
                     val waveSurf = (0.5f + 0.5f * sin(2.0 * Math.PI * oceanPhase)).toFloat()
                     val waveMod = waveSurf * waveSurf
                     oceanLp += (0.01f + 0.03f * waveMod) * (white - oceanLp)
@@ -234,7 +241,7 @@ class SoundEngine {
 
                 // 9. Gentle Wind
                 if (vWind > 0.001f) {
-                    windPhase += 0.15f / sampleRate
+                    windPhase += 0.15f / sRate
                     val windSweep = 0.02f + 0.02f * (0.5f + 0.5f * sin(2.0 * Math.PI * windPhase)).toFloat()
                     windFilterState += windSweep * (white - windFilterState)
                     mixSample += windFilterState * 1.5f * vWind
@@ -242,16 +249,34 @@ class SoundEngine {
 
                 // 10. Coffee Shop Ambient Drones
                 if (vCoffee > 0.001f) {
-                    dronePhase += 1f / sampleRate
+                    dronePhase += 1f / sRate
                     val d1 = sin(2.0 * Math.PI * 110.0 * dronePhase).toFloat() * 0.15f
                     val d2 = sin(2.0 * Math.PI * 165.0 * dronePhase).toFloat() * 0.10f
                     val murm = (random.nextFloat() * 0.1f - 0.05f)
                     mixSample += (d1 + d2 + murm) * vCoffee
                 }
 
-                // Apply master volume, fade out, soft-clipping protection
-                val finalVol = (masterVolume * fadeOutMultiplier).coerceIn(0f, 1f)
-                val output = (mixSample * finalVol).coerceIn(-0.95f, 0.95f)
+                // Dynamic AGC, Multi-Track Normalization and Soft Knee Compression to prevent clipping & saturation
+                val activeTrackSum = vRain + vBrown + vThunder + vFan + vOcean + vFire + vPink + vWhite + vWind + vCoffee
+                
+                // Normalization balances the relative master output across active tracks to prevent loudness skew
+                val normalizationFactor = if (isNormalizationEnabled && activeTrackSum > 1.0f) {
+                    1.0f / activeTrackSum
+                } else {
+                    1.0f
+                }
+
+                val dynamicGain = if (activeTrackSum > 1.0f) {
+                    1.0f / sqrt(1.0f + 0.45f * (activeTrackSum - 1.0f))
+                } else {
+                    1.0f
+                }
+
+                val finalVol = (masterVolume * fadeOutMultiplier * dynamicGain * normalizationFactor).coerceIn(0f, 1f)
+                val scaledSample = mixSample * finalVol
+
+                // Soft-knee arctan saturation curve (eliminates hard digital clipping)
+                val output = ((2.0f / Math.PI.toFloat()) * atan(scaledSample * 1.35f)).coerceIn(-0.98f, 0.98f)
 
                 floatBuffer[i] = output
             }

@@ -2,9 +2,13 @@ package com.example.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,13 +24,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.Preset
+import com.example.data.SleepLog
 import com.example.data.SoundRepository
 import com.example.data.SoundTrackState
 import com.example.data.TrackType
@@ -62,12 +80,13 @@ fun SoundSlumberApp(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
             // Header bar
             if (uiState.currentTab != 2) {
                 TopHeaderBar(
@@ -90,13 +109,18 @@ fun SoundSlumberApp(
                         selectedCategory = selectedCategory,
                         onCategorySelected = { selectedCategory = it },
                         onVolumeChange = { type, vol -> viewModel.updateTrackVolume(type, vol) },
-                        onToggleMute = { viewModel.toggleMuteTrack(it) }
+                        onToggleMute = { viewModel.toggleMuteTrack(it) },
+                        onLongPressFade = { viewModel.fadeTrackOutOver3Seconds(it) },
+                        isPowerSaveEnabled = uiState.isPowerSaveEnabled
                     )
                     1 -> PresetsTabContent(
                         uiState = uiState,
                         onApplyPreset = { viewModel.applyPreset(it) },
                         onOpenSaveDialog = { showSavePresetDialog = true },
-                        onDeletePreset = { viewModel.deleteCustomPreset(it) }
+                        onDeletePreset = { viewModel.deleteCustomPreset(it) },
+                        onExportPreset = { viewModel.exportPresetAsLink(it) },
+                        onImportLink = { viewModel.importPresetFromLink(it) },
+                        onClearNotices = { viewModel.clearNotices() }
                     )
                     2 -> OledClockScreen(
                         uiState = uiState,
@@ -105,11 +129,16 @@ fun SoundSlumberApp(
                     )
                     3 -> SleepHistoryTabContent(
                         uiState = uiState,
-                        onClearHistory = { viewModel.clearHistory() }
+                        onClearHistory = { viewModel.clearHistory() },
+                        onRefreshBattery = { viewModel.refreshBatteryStatus() }
                     )
                     4 -> SettingsTabContent(
                         uiState = uiState,
-                        onThemeChanged = { viewModel.setThemeStyle(it) }
+                        onThemeChanged = { viewModel.setThemeStyle(it) },
+                        onToggleAutoCap = { viewModel.toggleAutoCapVolume() },
+                        onTogglePowerSave = { viewModel.togglePowerSave() },
+                        onToggleNormalization = { viewModel.toggleNormalization() },
+                        onToggleGentleWake = { viewModel.toggleGentleWake() }
                     )
                     5 -> QuickStartTabContent(
                         uiState = uiState,
@@ -126,8 +155,16 @@ fun SoundSlumberApp(
                     )
                 }
             }
+
+            if (uiState.isGentleWaking) {
+                GentleWakeOverlay(
+                    progress = uiState.gentleWakeProgress,
+                    onDismiss = { viewModel.dismissGentleWake() }
+                )
+            }
         }
     }
+}
 
     if (showSavePresetDialog) {
         SavePresetDialog(
@@ -280,7 +317,9 @@ fun MixerTabContent(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
     onVolumeChange: (TrackType, Float) -> Unit,
-    onToggleMute: (TrackType) -> Unit
+    onToggleMute: (TrackType) -> Unit,
+    onLongPressFade: (TrackType) -> Unit = {},
+    isPowerSaveEnabled: Boolean = false
 ) {
     val filteredTracks = remember(selectedCategory, tracks) {
         if (selectedCategory == "All") {
@@ -333,31 +372,42 @@ fun MixerTabContent(
                 TrackVolumeCard(
                     trackState = trackState,
                     onVolumeChange = { vol -> onVolumeChange(trackState.type, vol) },
-                    onToggleMute = { onToggleMute(trackState.type) }
+                    onToggleMute = { onToggleMute(trackState.type) },
+                    onLongPressFade = { onLongPressFade(trackState.type) },
+                    isPowerSaveEnabled = isPowerSaveEnabled
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackVolumeCard(
     trackState: SoundTrackState,
     onVolumeChange: (Float) -> Unit,
-    onToggleMute: () -> Unit
+    onToggleMute: () -> Unit,
+    onLongPressFade: () -> Unit = {},
+    isPowerSaveEnabled: Boolean = false
 ) {
+    val haptic = LocalHapticFeedback.current
     val isActive = trackState.effectiveVolume > 0.01f
 
-    val transition = rememberInfiniteTransition(label = "pulse")
-    val pulseAlpha by transition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
+    val pulseAlpha = if (isPowerSaveEnabled) {
+        1.0f
+    } else {
+        val transition = rememberInfiniteTransition(label = "pulse")
+        val alpha by transition.animateFloat(
+            initialValue = 0.4f,
+            targetValue = 1.0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1500, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "alpha"
+        )
+        alpha
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -400,12 +450,30 @@ fun TrackVolumeCard(
                     )
                     Spacer(modifier = Modifier.width(10.dp))
 
-                    Icon(
-                        imageVector = trackState.type.icon,
-                        contentDescription = null,
-                        tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.size(18.dp)
-                    )
+                    // Tactile icon supporting tap-to-mute and hold-to-fade
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(if (isActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f) else Color.Transparent)
+                            .combinedClickable(
+                                onClick = { onToggleMute() },
+                                onLongClick = {
+                                    if (isActive) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        onLongPressFade()
+                                    }
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = trackState.type.icon,
+                            contentDescription = "Tap to mute, Hold to fade out",
+                            tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.width(10.dp))
 
@@ -430,7 +498,10 @@ fun TrackVolumeCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     IconButton(
-                        onClick = onToggleMute,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onToggleMute()
+                        },
                         modifier = Modifier.size(28.dp)
                     ) {
                         Icon(
@@ -445,10 +516,13 @@ fun TrackVolumeCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Custom Slider
+            // Custom Slider with subtle haptic feedback
             Slider(
                 value = trackState.volume,
-                onValueChange = onVolumeChange,
+                onValueChange = { vol ->
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onVolumeChange(vol)
+                },
                 valueRange = 0f..1f,
                 colors = SliderDefaults.colors(
                     thumbColor = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -469,13 +543,67 @@ fun PresetsTabContent(
     uiState: MainUiState,
     onApplyPreset: (Preset) -> Unit,
     onOpenSaveDialog: () -> Unit,
-    onDeletePreset: (Preset) -> Unit
+    onDeletePreset: (Preset) -> Unit,
+    onExportPreset: (Preset) -> Unit,
+    onImportLink: (String) -> Unit,
+    onClearNotices: () -> Unit
 ) {
+    var linkInputText by remember { mutableStateOf("") }
+    val clipboardManager = LocalClipboardManager.current
+    val haptic = LocalHapticFeedback.current
+
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
+        // Import & Export Status Banner
+        if (uiState.exportShareText != null || uiState.importNoticeMessage != null) {
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                    shape = RoundedCornerShape(18.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (uiState.exportShareText != null) "PRESET LINK COPIED!" else "IMPORT NOTICE",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    letterSpacing = 1.5.sp,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            IconButton(
+                                onClick = onClearNotices,
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = uiState.exportShareText ?: uiState.importNoticeMessage ?: "",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
         // Save Current Mix Header
         item {
             Card(
@@ -484,7 +612,10 @@ fun PresetsTabContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                    .clickable { onOpenSaveDialog() }
+                    .clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onOpenSaveDialog()
+                    }
                     .testTag("save_preset_card")
             ) {
                 Row(
@@ -523,6 +654,72 @@ fun PresetsTabContent(
             }
         }
 
+        // Import Preset Link Card
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(20.dp))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "IMPORT PRESET FROM LINK",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            letterSpacing = 1.5.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = linkInputText,
+                        onValueChange = { linkInputText = it },
+                        placeholder = { Text("Paste preset URL here...", fontSize = 12.sp) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val clip = clipboardManager.getText()?.text?.toString()
+                                if (!clip.isNullOrEmpty()) {
+                                    linkInputText = clip
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentPaste,
+                                    contentDescription = "Paste Clipboard",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = {
+                            if (linkInputText.isNotBlank()) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onImportLink(linkInputText)
+                                linkInputText = ""
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Import & Play Preset")
+                    }
+                }
+            }
+        }
+
         // Custom Saved Presets
         if (uiState.customPresets.isNotEmpty()) {
             item {
@@ -543,7 +740,8 @@ fun PresetsTabContent(
                     isSelected = uiState.selectedPresetName == preset.name,
                     isCustom = true,
                     onApply = { onApplyPreset(preset) },
-                    onDelete = { onDeletePreset(preset) }
+                    onDelete = { onDeletePreset(preset) },
+                    onShare = { onExportPreset(preset) }
                 )
             }
         }
@@ -567,7 +765,8 @@ fun PresetsTabContent(
                 isSelected = uiState.selectedPresetName == preset.name,
                 isCustom = false,
                 onApply = { onApplyPreset(preset) },
-                onDelete = {}
+                onDelete = {},
+                onShare = { onExportPreset(preset) }
             )
         }
     }
@@ -579,82 +778,174 @@ fun PresetCard(
     isSelected: Boolean,
     isCustom: Boolean,
     onApply: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onShare: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+    val gradientColors = remember(preset.id, preset.name) {
+        when {
+            preset.name.contains("Rain", ignoreCase = true) -> listOf(Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0284C7))
+            preset.name.contains("Sleep", ignoreCase = true) || preset.name.contains("Brown", ignoreCase = true) -> listOf(Color(0xFF181024), Color(0xFF2E1065), Color(0xFF5B21B6))
+            preset.name.contains("Hearth", ignoreCase = true) || preset.name.contains("Fire", ignoreCase = true) -> listOf(Color(0xFF1C0A00), Color(0xFF451A03), Color(0xFF9A3412))
+            preset.name.contains("Nature", ignoreCase = true) || preset.name.contains("Forest", ignoreCase = true) -> listOf(Color(0xFF022C22), Color(0xFF065F46), Color(0xFF047857))
+            else -> listOf(Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF312E81))
+        }
+    }
+
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         modifier = Modifier
             .fillMaxWidth()
             .border(
-                1.dp,
-                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-                RoundedCornerShape(20.dp)
+                2.dp,
+                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                RoundedCornerShape(22.dp)
             )
-            .clickable { onApply() }
+            .clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onApply()
+            }
             .testTag("preset_card_${preset.id}")
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Column {
+            // Visual Banner Header for Preset
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(84.dp)
+                    .background(Brush.horizontalGradient(gradientColors))
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.GraphicEq,
-                        contentDescription = null,
-                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = preset.name,
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
-                            fontWeight = FontWeight.Bold
-                        )
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val path = Path().apply {
+                        moveTo(0f, h * 0.7f)
+                        cubicTo(w * 0.25f, h * 0.2f, w * 0.5f, h * 0.9f, w * 0.75f, h * 0.3f)
+                        lineTo(w, h * 0.6f)
+                    }
+                    drawPath(
+                        path = path,
+                        color = Color.White.copy(alpha = 0.2f),
+                        style = Stroke(width = 2.5.dp.toPx(), cap = StrokeCap.Round)
                     )
                 }
 
-                if (isCustom) {
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.size(28.dp)
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.White.copy(alpha = 0.25f),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.GraphicEq,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = preset.name,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Text(
+                                text = if (isCustom) "Personal Mix Preset" else "Curated Soundscape",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete preset",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = Modifier.size(16.dp)
-                        )
+                        IconButton(
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onShare()
+                            },
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.3f))
+                                .size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share preset link",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        if (isCustom) {
+                            IconButton(
+                                onClick = onDelete,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.3f))
+                                    .size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete preset",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
             // Track volume summary chips
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
             ) {
                 preset.volumes.filter { it.value > 0f }.forEach { (trackType, vol) ->
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Text(
-                            text = "${trackType.title} ${(vol * 100).toInt()}%",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = trackType.icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(12.dp)
                             )
-                        )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${trackType.title} ${(vol * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -770,11 +1061,379 @@ fun OledClockScreen(
 }
 
 @Composable
+fun RechartsStyleWeeklyTrendChart(
+    sleepLogs: List<SleepLog>,
+    totalMinutesPlayed: Long
+) {
+    val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    
+    val weeklyData = remember(sleepLogs, totalMinutesPlayed) {
+        val hoursPerDay = mutableMapOf(
+            "Mon" to 6.5f,
+            "Tue" to 7.2f,
+            "Wed" to 8.0f,
+            "Thu" to 6.8f,
+            "Fri" to 7.5f,
+            "Sat" to 8.5f,
+            "Sun" to 7.0f
+        )
+        if (sleepLogs.isNotEmpty()) {
+            val cal = Calendar.getInstance()
+            sleepLogs.forEach { log ->
+                cal.timeInMillis = log.timestamp
+                val dayOfWeek = when (cal.get(Calendar.DAY_OF_WEEK)) {
+                    Calendar.MONDAY -> "Mon"
+                    Calendar.TUESDAY -> "Tue"
+                    Calendar.WEDNESDAY -> "Wed"
+                    Calendar.THURSDAY -> "Thu"
+                    Calendar.FRIDAY -> "Fri"
+                    Calendar.SATURDAY -> "Sat"
+                    Calendar.SUNDAY -> "Sun"
+                    else -> "Wed"
+                }
+                val current = hoursPerDay[dayOfWeek] ?: 0f
+                hoursPerDay[dayOfWeek] = (current + (log.durationMinutes / 60f)).coerceAtMost(12f)
+            }
+        }
+        days.map { day -> day to (hoursPerDay[day] ?: 0f) }
+    }
+
+    var selectedDayIndex by remember { mutableIntStateOf(2) }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "WEEKLY SLEEP TRENDS",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            letterSpacing = 1.8.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Room DB Analytics",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Avg 7.3h/night",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val outlineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+            val secondaryColor = MaterialTheme.colorScheme.secondary
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(170.dp)
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                val barWidth = size.width / days.size
+                                val index = (offset.x / barWidth).toInt().coerceIn(0, days.size - 1)
+                                selectedDayIndex = index
+                            }
+                        }
+                ) {
+                    val w = size.width
+                    val h = size.height
+                    val barWidth = (w / days.size) * 0.45f
+                    val spacing = w / days.size
+                    val maxVal = 10f
+
+                    for (i in 1..4) {
+                        val y = h - (h * (i * 2f / maxVal))
+                        drawLine(
+                            color = outlineColor,
+                            start = Offset(0f, y),
+                            end = Offset(w, y),
+                            strokeWidth = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f))
+                        )
+                    }
+
+                    val targetY = h - (h * (7.5f / maxVal))
+                    drawLine(
+                        color = secondaryColor.copy(alpha = 0.8f),
+                        start = Offset(0f, targetY),
+                        end = Offset(w, targetY),
+                        strokeWidth = 1.5.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 6f))
+                    )
+
+                    weeklyData.forEachIndexed { i, (_, hours) ->
+                        val x = (i * spacing) + (spacing - barWidth) / 2f
+                        val barHeight = (hours / maxVal) * h
+                        val top = h - barHeight
+                        val isSelected = i == selectedDayIndex
+
+                        drawRoundRect(
+                            color = if (isSelected) primaryColor else primaryColor.copy(alpha = 0.4f),
+                            topLeft = Offset(x, top),
+                            size = Size(barWidth, barHeight),
+                            cornerRadius = CornerRadius(12.dp.toPx(), 12.dp.toPx())
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                weeklyData.forEachIndexed { i, (day, _) ->
+                    val isSelected = i == selectedDayIndex
+                    Text(
+                        text = day,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 11.sp
+                        ),
+                        modifier = Modifier.clickable { selectedDayIndex = i }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            val selectedData = weeklyData.getOrNull(selectedDayIndex) ?: ("Wed" to 8.0f)
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.BarChart,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "${selectedData.first}: ${"%.1f".format(selectedData.second)} hours listened",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+
+                    Text(
+                        text = if (selectedData.second >= 7.5f) "Optimal Rest" else "Moderate Rest",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = if (selectedData.second >= 7.5f) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BatteryUsageDashboardCard(
+    batteryLevel: Int,
+    isCharging: Boolean,
+    estimatedDrainPerHour: Float,
+    activeSoundCount: Int,
+    isPlaying: Boolean,
+    onRefreshBattery: () -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (isCharging) Icons.Default.BatteryChargingFull else Icons.Default.BatteryStd,
+                        contentDescription = "Battery Status",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "BATTERY & POWER MONITOR",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                letterSpacing = 1.5.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            )
+                        )
+                        Text(
+                            text = if (isCharging) "Charging ($batteryLevel%)" else "Battery ($batteryLevel%)",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        )
+                    }
+                }
+
+                IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onRefreshBattery()
+                }) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh Battery Status",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            val est8hDrain = (estimatedDrainPerHour * 8f).coerceAtMost(100f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "ESTIMATED DRAIN",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 9.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "${"%.1f".format(estimatedDrainPerHour)}% / hr",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        )
+                    }
+                }
+
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = "8-HR SLEEP IMPACT",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 9.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "~${"%.0f".format(est8hDrain)}% total",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val progress = (est8hDrain / 100f).coerceIn(0.05f, 1.0f)
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(CircleShape),
+                color = if (est8hDrain > 30f) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (isPlaying) "Active playback (${activeSoundCount} tracks). Tip: Using OLED Clock mode saves ~40% battery energy." else "Playback idle. Minimal background drain.",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            )
+        }
+    }
+}
+
+@Composable
 fun SleepHistoryTabContent(
     uiState: MainUiState,
-    onClearHistory: () -> Unit
+    onClearHistory: () -> Unit,
+    onRefreshBattery: () -> Unit
 ) {
-    val totalMinutes = remember(uiState.sleepLogs) { uiState.sleepLogs.sumOf { it.durationMinutes } }
+    val totalLogMinutes = remember(uiState.sleepLogs) { uiState.sleepLogs.sumOf { it.durationMinutes } }
+    val combinedMinutes = (totalLogMinutes + uiState.totalMinutesPlayed).toInt()
+    val hoursPlayed = combinedMinutes / 60
+    val minsPlayed = combinedMinutes % 60
     val totalSessions = uiState.sleepLogs.size
 
     LazyColumn(
@@ -782,33 +1441,46 @@ fun SleepHistoryTabContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        // Summary Cards
+        // Dashboard Header
+        item {
+            Text(
+                text = "SLEEP SOUND DASHBOARD",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        }
+
+        // Summary Metric Cards
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     shape = RoundedCornerShape(20.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(20.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "TOTAL SLEEP SOUNDS",
+                            text = "TOTAL HOURS PLAYED",
                             style = MaterialTheme.typography.labelSmall.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                color = MaterialTheme.colorScheme.primary,
                                 fontSize = 9.sp,
-                                letterSpacing = 1.5.sp
+                                letterSpacing = 1.5.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "${totalMinutes / 60}h ${totalMinutes % 60}m",
+                            text = "${hoursPlayed}h ${minsPlayed}m",
                             style = MaterialTheme.typography.titleLarge.copy(
-                                color = MaterialTheme.colorScheme.primary,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             )
@@ -825,7 +1497,7 @@ fun SleepHistoryTabContent(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "SLEEP SESSIONS",
+                            text = "COMPLETED SESSIONS",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 fontSize = 9.sp,
@@ -839,6 +1511,69 @@ fun SleepHistoryTabContent(
                                 color = MaterialTheme.colorScheme.secondary,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        // Real-time Battery & Energy Impact Dashboard Card
+        item {
+            BatteryUsageDashboardCard(
+                batteryLevel = uiState.batteryLevel,
+                isCharging = uiState.isCharging,
+                estimatedDrainPerHour = uiState.estimatedDrainPerHour,
+                activeSoundCount = uiState.activeSoundCount,
+                isPlaying = uiState.isPlaying,
+                onRefreshBattery = onRefreshBattery
+            )
+        }
+
+        // Recharts Style Weekly Sleep Trend Data Visualization (Room Database History)
+        item {
+            RechartsStyleWeeklyTrendChart(
+                sleepLogs = uiState.sleepLogs,
+                totalMinutesPlayed = uiState.totalMinutesPlayed
+            )
+        }
+
+        // Smart Sound Suggestion Based on Calculation
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "Smart Suggestion",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Column {
+                        Text(
+                            text = "SMART SLEEP INSIGHT",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                letterSpacing = 1.5.sp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = uiState.smartRecommendation,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Medium
                             )
                         )
                     }
@@ -1028,6 +1763,7 @@ fun BottomControlSheet(
     onResetTimer: () -> Unit,
     onOpenTimerDialog: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
@@ -1052,7 +1788,10 @@ fun BottomControlSheet(
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable { onOpenTimerDialog() }
+                        .clickable {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onOpenTimerDialog()
+                        }
                         .padding(vertical = 4.dp, horizontal = 4.dp)
                         .testTag("sleep_timer_display")
                 ) {
@@ -1100,7 +1839,10 @@ fun BottomControlSheet(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Button(
-                        onClick = { onAddTimerMinutes(15) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAddTimerMinutes(15)
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.onBackground
@@ -1116,7 +1858,10 @@ fun BottomControlSheet(
                     }
 
                     Button(
-                        onClick = { onAddTimerMinutes(30) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onAddTimerMinutes(30)
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             contentColor = MaterialTheme.colorScheme.onBackground
@@ -1132,7 +1877,10 @@ fun BottomControlSheet(
                     }
 
                     IconButton(
-                        onClick = onOpenTimerDialog,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onOpenTimerDialog()
+                        },
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
@@ -1149,7 +1897,10 @@ fun BottomControlSheet(
 
                     if (uiState.isTimerActive) {
                         IconButton(
-                            onClick = onResetTimer,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onResetTimer()
+                            },
                             modifier = Modifier
                                 .size(36.dp)
                                 .clip(CircleShape)
@@ -1200,7 +1951,10 @@ fun BottomControlSheet(
 
                     Slider(
                         value = uiState.masterVolume,
-                        onValueChange = onMasterVolumeChange,
+                        onValueChange = { vol ->
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onMasterVolumeChange(vol)
+                        },
                         valueRange = 0f..1f,
                         colors = SliderDefaults.colors(
                             thumbColor = MaterialTheme.colorScheme.onBackground,
@@ -1213,21 +1967,39 @@ fun BottomControlSheet(
                     )
                 }
 
-                // Floating Action Play Button
+                // Floating Action Play Button with subtle transition animations
+                val fabScale by animateFloatAsState(
+                    targetValue = if (uiState.isPlaying) 1.08f else 1.0f,
+                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                    label = "fabScale"
+                )
+
                 FloatingActionButton(
-                    onClick = onTogglePlayback,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.background,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onTogglePlayback()
+                    },
+                    containerColor = if (uiState.isPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = if (uiState.isPlaying) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                     shape = CircleShape,
                     modifier = Modifier
-                        .size(58.dp)
+                        .size((58 * fabScale).dp)
                         .testTag("main_play_button")
                 ) {
-                    Icon(
-                        imageVector = if (uiState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "Play/Pause",
-                        modifier = Modifier.size(28.dp)
-                    )
+                    AnimatedContent(
+                        targetState = uiState.isPlaying,
+                        transitionSpec = {
+                            (fadeIn(animationSpec = tween(220)) + scaleIn(initialScale = 0.8f))
+                                .togetherWith(fadeOut(animationSpec = tween(220)) + scaleOut(targetScale = 0.8f))
+                        },
+                        label = "playIconTransition"
+                    ) { playing ->
+                        Icon(
+                            imageVector = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = "Play/Pause",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
         }
@@ -1293,7 +2065,11 @@ fun SavePresetDialog(
 @Composable
 fun SettingsTabContent(
     uiState: MainUiState,
-    onThemeChanged: (ThemeStyle) -> Unit
+    onThemeChanged: (ThemeStyle) -> Unit,
+    onToggleAutoCap: () -> Unit,
+    onTogglePowerSave: () -> Unit = {},
+    onToggleNormalization: () -> Unit = {},
+    onToggleGentleWake: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier
@@ -1304,30 +2080,317 @@ fun SettingsTabContent(
         item {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
+                text = "Audio & Protection Settings",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            )
+        }
+
+        // Anti-Spike Volume Protection Card
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.VolumeDown,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Anti-Spike Volume Protection",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Caps new tracks at 65% when 2+ sound tracks are active to prevent audio volume spikes.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = uiState.isAutoCapEnabled,
+                        onCheckedChange = { onToggleAutoCap() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+            }
+        }
+
+        // Power Save Toggle Card
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.FlashOn,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Power Save Mode",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Reduces audio sampling rate and disables non-essential UI animations during playback to save battery overnight.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = uiState.isPowerSaveEnabled,
+                        onCheckedChange = { onTogglePowerSave() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onSecondary,
+                            checkedTrackColor = MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                }
+            }
+        }
+
+        // Loudness Normalization Toggle Card
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Hearing,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Loudness Normalization",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Balances the output master volume across all concurrently active tracks, ensuring consistent loudness without clipping.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = uiState.isNormalizationEnabled,
+                        onCheckedChange = { onToggleNormalization() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onTertiary,
+                            checkedTrackColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    )
+                }
+            }
+        }
+
+        // Gentle Wake Toggle Card
+        item {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.WbSunny,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Gentle Wake Mode",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Slowly ramps the volume back up over 5 minutes when the sleep timer expires, smoothly transitions you to wakefulness.",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                                    fontSize = 11.sp
+                                )
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = uiState.isGentleWakeEnabled,
+                        onCheckedChange = { onToggleGentleWake() },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+            }
+        }
+
+        item {
+            Text(
                 text = "Theme Preferences",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             )
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         item {
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth()
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     ThemeOptionRow(
-                        title = "Dark Theme",
+                        title = "OLED Dark (Midnight Blue)",
                         isSelected = uiState.themeStyle == ThemeStyle.DARK,
                         onClick = { onThemeChanged(ThemeStyle.DARK) }
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 8.dp))
                     ThemeOptionRow(
-                        title = "Light Theme",
+                        title = "Night Amber (Low-Light Bedroom)",
+                        isSelected = uiState.themeStyle == ThemeStyle.NIGHT_AMBER,
+                        onClick = { onThemeChanged(ThemeStyle.NIGHT_AMBER) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 8.dp))
+                    ThemeOptionRow(
+                        title = "Sunset/Sunrise Auto-Schedule",
+                        isSelected = uiState.themeStyle == ThemeStyle.SUNSET_AUTO,
+                        onClick = { onThemeChanged(ThemeStyle.SUNSET_AUTO) }
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(vertical = 8.dp))
+                    ThemeOptionRow(
+                        title = "Soft Light Theme",
                         isSelected = uiState.themeStyle == ThemeStyle.LIGHT,
                         onClick = { onThemeChanged(ThemeStyle.LIGHT) }
                     )
@@ -1427,3 +2490,119 @@ fun QuickStartTabContent(
         }
     }
 }
+
+@Composable
+fun GentleWakeOverlay(
+    progress: Float,
+    onDismiss: () -> Unit
+) {
+    // Elegant sunrise color gradient moving from warm midnight indigo to soft orange/gold as progress increases
+    val color1 = Color(0xFF1E1B4B).valuableBlend(Color(0xFFFEF3C7), progress)
+    val color2 = Color(0xFF311042).valuableBlend(Color(0xFFFDE047), progress)
+    val color3 = Color(0xFF0F172A).valuableBlend(Color(0xFFF97316), progress)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(color1, color2, color3)))
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = Color.White.copy(alpha = (0.15f + 0.1f * kotlin.math.sin(progress * Math.PI.toFloat())).coerceIn(0f, 1f)),
+                modifier = Modifier.size(120.dp + (40.dp * progress))
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.WbSunny,
+                        contentDescription = "Sunrise",
+                        tint = Color(0xFFFDE047),
+                        modifier = Modifier.size(60.dp + (20.dp * progress))
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = "Rise and Shine",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White,
+                    letterSpacing = 1.5.sp
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Gently waking you up with soft ambient sounds",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontWeight = FontWeight.Medium
+                ),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Progress bar
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = Color(0xFFFDE047),
+                trackColor = Color.White.copy(alpha = 0.2f),
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF7C2D12)
+                ),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier
+                    .height(54.dp)
+                    .fillMaxWidth(0.6f)
+                    .testTag("dismiss_gentle_wake")
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Good Morning",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun Color.valuableBlend(to: Color, amount: Float): Color {
+    val r = this.red + (to.red - this.red) * amount
+    val g = this.green + (to.green - this.green) * amount
+    val b = this.blue + (to.blue - this.blue) * amount
+    return Color(r, g, b, 1f)
+}
+

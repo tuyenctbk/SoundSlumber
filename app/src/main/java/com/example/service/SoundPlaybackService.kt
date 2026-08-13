@@ -21,6 +21,18 @@ class SoundPlaybackService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private lateinit var mediaSession: MediaSessionCompat
 
+    var isPowerSaveEnabled: Boolean = false
+        set(value) {
+            field = value
+            soundEngine.isPowerSaveEnabled = value
+        }
+
+    var isNormalizationEnabled: Boolean = true
+        set(value) {
+            field = value
+            soundEngine.isNormalizationEnabled = value
+        }
+
     inner class LocalBinder : Binder() {
         fun getService(): SoundPlaybackService = this@SoundPlaybackService
     }
@@ -143,7 +155,11 @@ class SoundPlaybackService : Service() {
                 .setShowActionsInCompactView(0))
             .build()
 
-        startForeground(NOTIFICATION_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun createNotificationChannel() {
