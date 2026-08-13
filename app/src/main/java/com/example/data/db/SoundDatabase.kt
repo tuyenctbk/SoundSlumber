@@ -20,7 +20,7 @@ abstract class SoundDatabase : RoomDatabase() {
                     context.applicationContext,
                     SoundDatabase::class.java,
                     "soundslumber_db"
-                ).fallbackToDestructiveMigration().build()
+                ).fallbackToDestructiveMigration(dropAllTables = true).build()
                 INSTANCE = instance
                 instance
             }

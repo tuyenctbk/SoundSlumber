@@ -30,7 +30,6 @@ class SoundEngine {
     @Volatile
     var fadeOutMultiplier: Float = 1.0f
 
-    // Track volume map
     private val trackVolumes = java.util.concurrent.ConcurrentHashMap<TrackType, Float>()
 
     init {
@@ -90,10 +89,11 @@ class SoundEngine {
         synthJob = null
 
         try {
-            audioTrack?.stop()
-            audioTrack?.release()
+            val track = audioTrack
+            audioTrack = null
+            track?.stop()
+            track?.release()
         } catch (_: Exception) {}
-        audioTrack = null
     }
 
     private suspend fun synthesizeAudioLoop() = withContext(Dispatchers.Default) {
@@ -148,6 +148,20 @@ class SoundEngine {
             val vWhite = (trackVolumes[TrackType.WHITE_NOISE] ?: 0f)
             val vWind = (trackVolumes[TrackType.GENTLE_WIND] ?: 0f)
             val vCoffee = (trackVolumes[TrackType.COFFEE_SHOP] ?: 0f)
+
+            // Calculate frame-level AGC gain & normalization factors once per frame (1024 samples)
+            val activeTrackSum = vRain + vBrown + vThunder + vFan + vOcean + vFire + vPink + vWhite + vWind + vCoffee
+            val normalizationFactor = if (isNormalizationEnabled && activeTrackSum > 1.0f) {
+                1.0f / activeTrackSum
+            } else {
+                1.0f
+            }
+            val dynamicGain = if (activeTrackSum > 1.0f) {
+                1.0f / sqrt(1.0f + 0.45f * (activeTrackSum - 1.0f))
+            } else {
+                1.0f
+            }
+            val finalVol = (masterVolume * fadeOutMultiplier * dynamicGain * normalizationFactor).coerceIn(0f, 1f)
 
             for (i in 0 until frameSize) {
                 sampleIndex++
@@ -256,27 +270,11 @@ class SoundEngine {
                     mixSample += (d1 + d2 + murm) * vCoffee
                 }
 
-                // Dynamic AGC, Multi-Track Normalization and Soft Knee Compression to prevent clipping & saturation
-                val activeTrackSum = vRain + vBrown + vThunder + vFan + vOcean + vFire + vPink + vWhite + vWind + vCoffee
-                
-                // Normalization balances the relative master output across active tracks to prevent loudness skew
-                val normalizationFactor = if (isNormalizationEnabled && activeTrackSum > 1.0f) {
-                    1.0f / activeTrackSum
-                } else {
-                    1.0f
-                }
-
-                val dynamicGain = if (activeTrackSum > 1.0f) {
-                    1.0f / sqrt(1.0f + 0.45f * (activeTrackSum - 1.0f))
-                } else {
-                    1.0f
-                }
-
-                val finalVol = (masterVolume * fadeOutMultiplier * dynamicGain * normalizationFactor).coerceIn(0f, 1f)
                 val scaledSample = mixSample * finalVol
 
-                // Soft-knee arctan saturation curve (eliminates hard digital clipping)
-                val output = ((2.0f / Math.PI.toFloat()) * atan(scaledSample * 1.35f)).coerceIn(-0.98f, 0.98f)
+                // Fast rational soft-knee saturation curve (eliminates heavy trigonometric atan calls in hot DSP loop)
+                val absSample = abs(scaledSample)
+                val output = (scaledSample / (1.0f + absSample * 0.45f)).coerceIn(-0.98f, 0.98f)
 
                 floatBuffer[i] = output
             }
@@ -286,14 +284,9 @@ class SoundEngine {
                 buffer[i] = (floatBuffer[i] * 32767f).toInt().toShort()
             }
 
-            audioTrack?.write(buffer, 0, frameSize)
+            try {
+                audioTrack?.write(buffer, 0, frameSize)
+            } catch (_: Exception) {}
         }
     }
-}
-
-// Thread-safe map simple wrapper for Kotlin
-private class ConcurrentHashMap<K, V> {
-    private val map = java.util.concurrent.ConcurrentHashMap<K, V>()
-    operator fun get(key: K): V? = map[key]
-    operator fun set(key: K, value: V) { map[key] = value }
 }

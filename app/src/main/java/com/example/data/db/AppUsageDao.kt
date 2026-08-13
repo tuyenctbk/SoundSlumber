@@ -13,6 +13,9 @@ interface AppUsageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertValue(usage: AppUsageEntity)
     
+    @Query("INSERT INTO app_usage (`key`, value) VALUES (:key, 1) ON CONFLICT(`key`) DO UPDATE SET value = value + 1")
+    suspend fun incrementValue(key: String)
+
     @Query("SELECT * FROM app_usage")
     suspend fun getAllUsage(): List<AppUsageEntity>
 }

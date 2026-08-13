@@ -7,6 +7,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
@@ -50,6 +51,12 @@ class SoundPlaybackService : Service() {
         )
         
         mediaSession = MediaSessionCompat(this, "SoundSlumberSession").apply {
+            setMetadata(
+                MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "SoundSlumber")
+                    .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, "Sleep Ambient Sounds")
+                    .build()
+            )
             setCallback(object : MediaSessionCompat.Callback() {
                 override fun onPlay() {
                     startPlayback()

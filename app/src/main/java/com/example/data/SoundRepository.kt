@@ -12,8 +12,7 @@ class SoundRepository(private val soundDao: SoundDao, private val appUsageDao: A
     // ...
     suspend fun getUsageValue(key: String): Long = appUsageDao.getValue(key) ?: 0L
     suspend fun incrementUsage(key: String) {
-        val currentValue = getUsageValue(key)
-        setUsageValue(key, currentValue + 1)
+        appUsageDao.incrementValue(key)
     }
 
     suspend fun setUsageValue(key: String, value: Long) {

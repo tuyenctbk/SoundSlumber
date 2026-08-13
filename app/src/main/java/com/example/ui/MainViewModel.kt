@@ -379,6 +379,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val addedSeconds = minutes * 60
         val newTotal = currentRemaining + addedSeconds
 
+        playbackService?.soundEngine?.fadeOutMultiplier = 1.0f
+
         _uiState.update {
             it.copy(
                 timerTotalSeconds = if (it.isTimerActive) it.timerTotalSeconds + addedSeconds else newTotal,

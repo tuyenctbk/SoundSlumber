@@ -2469,7 +2469,7 @@ fun SettingsTabContent(
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
-                                    imageVector = Icons.Default.VolumeDown,
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeDown,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)

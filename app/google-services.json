@@ -1,0 +1,181 @@
+{
+  "project_info": {
+    "project_number": "728639728432",
+    "project_id": "mornshield",
+    "storage_bucket": "mornshield.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:76d77e56b5aa17fbbd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.clipvault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:0778d35e5ea38e19bd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.fieldtrace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:599163f4f9c4e349bd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.flow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:23bd98b7981f1afebd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.motorsonar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:e947161b006e5cfebd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.pdfcraft"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:a9ac4043e03be585bd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.purelock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:d17a1e5e8c797ea3bd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.soundslumber"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:f584a703946eec70bd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.swaift"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728639728432:android:eee9c521f52f9168bd76f5",
+        "android_client_info": {
+          "package_name": "com.soloprono.tunezen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGc6cEPqcYBkBwTqs6m8TkgQCvaXSMB3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
